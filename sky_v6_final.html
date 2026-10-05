@@ -212,7 +212,7 @@
       const ADMIN_ACCOUNT = "skywalker";
       const i18n = {
         zh: {
-          placeholder:"搜索或创建规范...",explore:"Sky 探索",lucky:"手气不错",seed:"一键播种",edit:"修改",profile:"我的主页",admin:"播种后台",langLabel:"EN",
+          placeholder:"搜索或创建规范...",explore:"Sky 探索",lucky:"手气不错",seed:"一键播种",edit:"修改",profile:"我的主页",admin:"后台入口",langLabel:"EN",
           brandAlt:"Sky 标志",navLabel:"主导航",langSwitch:"切换到英文",documentTitle:"Sky — 知识在共识中进化",tagline:"极简去中心化共识百科 · 知识在复现中进化",featured:"探索知识",articleCount:"篇规范已在本地播种",
           emptyTitle:"还没有找到规范",emptyText:"试试其他关键词，或前往播种后台创建第一篇。",noArticles:"还没有内容",official:"Sky Official",by:"作者",
           home:"首页",toc:"目录",infobox:"信息卡",noInfo:"暂无补充信息",editArticle:"提交修改建议",proposalTitle:"提交修改建议",
@@ -270,22 +270,22 @@
           console.error("Unable to read local data", key, error);
           return [];
         }
-        function readAdminAuth() {
-          try {
-            const stored = localStorage.getItem(ADMIN_AUTH_KEY);
-            if (!stored) return null;
-            const auth = JSON.parse(stored);
-            return auth && typeof auth.salt === "string" && typeof auth.hash === "string" ? auth : null;
-          } catch (error) {
-            console.error("Unable to read local admin credentials",error);
-            return null;
-          }
+      }
+      function readAdminAuth() {
+        try {
+          const stored = localStorage.getItem(ADMIN_AUTH_KEY);
+          if (!stored) return null;
+          const auth = JSON.parse(stored);
+          return auth && typeof auth.salt === "string" && typeof auth.hash === "string" ? auth : null;
+        } catch (error) {
+          console.error("Unable to read local admin credentials",error);
+          return null;
         }
-        async function hashPassword(password,salt) {
-          if (!globalThis.crypto?.subtle || !globalThis.crypto?.getRandomValues) throw new Error(t("cryptoUnavailable"));
-          const bytes = await crypto.subtle.digest("SHA-256",new TextEncoder().encode(`${salt}:${password}`));
-          return Array.from(new Uint8Array(bytes),byte => byte.toString(16).padStart(2,"0")).join("");
-        }
+      }
+      async function hashPassword(password,salt) {
+        if (!globalThis.crypto?.subtle || !globalThis.crypto?.getRandomValues) throw new Error(t("cryptoUnavailable"));
+        const bytes = await crypto.subtle.digest("SHA-256",new TextEncoder().encode(`${salt}:${password}`));
+        return Array.from(new Uint8Array(bytes),byte => byte.toString(16).padStart(2,"0")).join("");
       }
       function writeJson(key, value) {
         try {
@@ -331,7 +331,7 @@
       const state = {
         db:initialDb,
         lang:(() => { try { return localStorage.getItem(LANG_KEY) === "en" ? "en" : "zh"; } catch (_) { return "zh"; } })(),
-        page:"home",
+        page:window.location.hash === "#admin" ? "admin" : "home",
         query:"",
         articleId:"",
         user:null,
@@ -368,35 +368,7 @@
         clearTimeout(state.toastTimer);
         state.toastTimer = setTimeout(() => { node.hidden = true; },3600);
       }
-      function logoSvg(kind) {
-        const isBase = kind === "base";
-        const s = isBase ? "#111827" : "#2EA6B0";
-        const k = isBase ? "#0EA5E9" : (kind === "dark" ? "#FFFFFF" : "#111827");
-        const y = isBase || kind === "light" ? "#111827" : "#FFFFFF";
-        return `<svg xmlns="http://www.w3.org/2000/svg" width="560" height="220" viewBox="0 0 560 220"><g transform="translate(22 14) skewX(-8)"><text x="12" y="165" font-family="Baskerville,Georgia,'Times New Roman',serif" font-size="184" font-style="italic" font-weight="500" fill="${s}">S</text><text x="137" y="165" font-family="Baskerville,Georgia,'Times New Roman',serif" font-size="184" font-style="italic" font-weight="500" fill="${k}">k</text><text x="257" y="165" font-family="Baskerville,Georgia,'Times New Roman',serif" font-size="184" font-style="italic" font-weight="500" fill="${y}">y</text></g></svg>`;
-      }
-      function svgData(svg) { return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg); }
-      function pngFromSvg(svg) {
-        return new Promise(resolve => {
-          const image = new Image();
-          image.onload = () => {
-            try {
-              const canvas = document.createElement("canvas");
-              canvas.width = 840;
-              canvas.height = 330;
-              canvas.getContext("2d").drawImage(image,0,0,canvas.width,canvas.height);
-              resolve(canvas.toDataURL("image/png"));
-            } catch (_) { resolve(svgData(svg)); }
-          };
-          image.onerror = () => resolve(svgData(svg));
-          image.src = svgData(svg);
-        });
-      }
-      let logoSources = {light:svgData(logoSvg("light")),dark:svgData(logoSvg("dark"))};
-      Promise.all([pngFromSvg(logoSvg("light")),pngFromSvg(logoSvg("dark"))]).then(([light,dark]) => {
-        logoSources = {light,dark};
-        updateLogos();
-      });
+      const logoSources = {light:"./logo-light.png",dark:"./logo-dark.png"};
       function updateLogos() {
         const header = document.getElementById("headerLogo");
         if (header) { header.src = logoSources.light; header.alt = t("brandAlt"); }
@@ -638,6 +610,10 @@
         state.proposalId = "";
         state.proposalDraft = "";
         state.flashBlock = -1;
+        const nextHash = page === "admin" ? "#admin" : "";
+        if (window.location.hash !== nextHash) {
+          window.history.replaceState(null,"",window.location.pathname + window.location.search + nextHash);
+        }
         render();
         window.scrollTo({top:0,behavior:"smooth"});
       }

@@ -32,6 +32,7 @@ jobs:
           mkdir -p _site
           cp sky_v6_final.html _site/index.html
           cp sky_v6_final.html _site/sky_v6_final.html
+          cp logo-light.png logo-dark.png sky_extracted_from_screenshot.png _site/
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

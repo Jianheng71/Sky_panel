@@ -7,8 +7,9 @@
 ## Try it
 
 - **Live site:** https://jianheng71.github.io/Sky_panel/
-- Open [`sky_v6_final.html`](./sky_v6_final.html) directly in a modern browser, or visit the live site.
+- Open the site files together (`sky_v6_final.html`, `logo-light.png`, and `logo-dark.png`) in a modern browser, or visit the live site.
 - Switch between Chinese and English with the language button in the header.
+- Open the **后台入口 / Admin** button in the top-right, or go directly to https://jianheng71.github.io/Sky_panel/#admin.
 
 ## Features
 
@@ -17,12 +18,13 @@
 - Suggest edits without replacing the current article; vote on or copy blocks.
 - Export and import the local wiki as JSON.
 - Responsive home, article, profile, and admin-console views.
+- The supplied Sky artwork, cropped to a transparent PNG, plus light and dark transparent logo variants.
 
 ## Local-only data
 
 Sky stores articles, language preference, profiles, and edit suggestions in the current browser's `localStorage`. There is no shared database: changes made by one visitor do not appear for other visitors or browsers. Use JSON export/import to move a wiki between browsers.
 
-The console's first-use password is set separately in each browser. It only gates that browser's local console; it is **not** website authentication or a security boundary. Do not use it to protect shared or sensitive data.
+The top-right **后台入口 / Admin** opens the local admin console. Its first-use password is set separately in each browser. This static app has no server-side backend; the password only gates that browser's local console and is **not** website authentication or a security boundary. Do not use it to protect shared or sensitive data.
 
 ## GitHub Pages
 
