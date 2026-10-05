@@ -100,6 +100,7 @@
     .info-row strong { font-weight:500; overflow-wrap:anywhere; }
     .info-empty { color:#8993a1; font-size:12px; line-height:1.6; }
     .article-notice { margin:0 0 15px; padding:12px 14px; border:1px solid #cde8d8; border-radius:9px; color:#226742; background:#f0fbf4; font-size:13px; }
+    .backend-alert { margin:18px 0 0; padding:13px 16px; border:1px solid #f2c7c4; border-radius:10px; color:#8f2822; background:#fff5f4; font-size:13px; line-height:1.6; }
     .proposal-panel { margin-top:18px; padding:17px; border:1px solid var(--line); border-radius:12px; background:#fff; }
     .proposal-panel h2 { margin:0 0 8px; font-size:16px; }
     .proposal-panel p { margin:0 0 12px; color:#667085; font-size:12px; line-height:1.6; }
@@ -204,57 +205,58 @@
     (() => {
       "use strict";
 
-      const DB_KEY = "sky_wiki_db";
+      const SUPABASE_URL = "https://fpfwohsyxkpidmwzetma.supabase.co";
+      const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Mknp6bJb9AnFTP-yhlWplQ_pVA83sbk";
+      const LEGACY_DB_KEY = "sky_wiki_db";
       const LANG_KEY = "sky_lang";
-      const USERS_KEY = "sky_users";
-      const QUEUE_KEY = "sky_edit_queue";
-      const ADMIN_AUTH_KEY = "sky_admin_auth";
-      const ADMIN_ACCOUNT = "skywalker";
+      const SESSION_KEY = "sky_supabase_session";
       const i18n = {
         zh: {
           placeholder:"搜索或创建规范...",explore:"Sky 探索",lucky:"手气不错",seed:"一键播种",edit:"修改",profile:"我的主页",admin:"后台入口",langLabel:"EN",
-          brandAlt:"Sky 标志",navLabel:"主导航",langSwitch:"切换到英文",documentTitle:"Sky — 知识在共识中进化",tagline:"极简去中心化共识百科 · 知识在复现中进化",featured:"探索知识",articleCount:"篇规范已在本地播种",
+          brandAlt:"Sky 标志",navLabel:"主导航",langSwitch:"切换到英文",documentTitle:"Sky — 知识在共识中进化",tagline:"极简去中心化共识百科 · 知识在复现中进化",featured:"探索知识",articleCount:"篇规范",
           emptyTitle:"还没有找到规范",emptyText:"试试其他关键词，或前往播种后台创建第一篇。",noArticles:"还没有内容",official:"Sky Official",by:"作者",
           home:"首页",toc:"目录",infobox:"信息卡",noInfo:"暂无补充信息",editArticle:"提交修改建议",proposalTitle:"提交修改建议",
-          proposalHint:"你的建议会保存到本机的替代队列，不会覆盖主版本。",proposalLabel:"建议内容",submitProposal:"提交建议",cancel:"取消",
-          proposalSaved:"修改建议已保存到本机队列。",voteOk:"有帮助",voteFail:"需改进",copy:"复制",copied:"已复制区块内容。",
+          proposalHint:"你的建议会提交到共享队列，不会覆盖主版本。",proposalLabel:"建议内容",submitProposal:"提交建议",cancel:"取消",
+          proposalSaved:"修改建议已提交到共享队列。",voteOk:"有帮助",voteFail:"需改进",copy:"复制",copied:"已复制区块内容。",
           profileTitle:"我的主页",profileBio:"我的 Sky 知识链接",myArticles:"参与的规范",allArticles:"返回探索",profileEmpty:"暂无参与的规范",
-          console:"播种控制台",consoleLead:"管理本地知识库。数据只保存在此浏览器的 localStorage 中。",adminSignIn:"管理员登录",adminSignInHint:"登录后即可发布和管理本地规范。",
-          adminSetupTitle:"设置本机管理员密码",adminSetupHint:"首次在此浏览器设置。仅用于本机控制台，不是网站访问保护；密码哈希只保存在本浏览器中。",localAdminOnly:"本地管理员登录只控制当前浏览器中的 localStorage，不能保护共享网站数据。",
-          account:"账号",password:"密码",confirmPassword:"确认密码",signIn:"登录",setPassword:"设置密码",signOut:"退出登录",invalidLogin:"账号或密码不正确。",passwordMismatch:"两次输入的密码不一致。",passwordConfigured:"本机管理员密码已设置。",cryptoUnavailable:"此浏览器不支持安全密码哈希，无法设置本机密码。",loggedIn:"已登录管理控制台。",
+          console:"播种控制台",consoleLead:"管理共享知识库。文章保存在 Supabase，访客都能看到。",adminSignIn:"Supabase 管理员登录",adminSignInHint:"使用 Supabase Authentication 中已创建并授权的管理员邮箱登录。",
+          account:"邮箱",password:"密码",confirmPassword:"确认密码",signIn:"登录",setPassword:"设置密码",signOut:"退出登录",invalidLogin:"邮箱或密码不正确。",passwordMismatch:"两次输入的密码不一致。",passwordConfigured:"",cryptoUnavailable:"",loggedIn:"已登录共享控制台。",
+          adminNotAllowed:"此账号尚未获得管理权限。请在 Supabase 的 sky_admins 表中添加此用户 UUID。",authCreateAccount:"首次使用前，需先运行仓库 supabase/setup.sql，再在 Supabase Authentication → Users 创建并确认管理员账号。",          backendUnavailable:"无法连接 Supabase：",loadingArticles:"正在载入共享文章…",
           seedEditor:"播种编辑器",seedEditorHint:"用 Raw Textarea 写入内容；发布会覆盖相同 ID 的现有规范。每个区块初始认可票为 10。",
           idLabel:"ID（英文 slug）",titleLabel:"标题",rawLabel:"Raw Textarea",idPlaceholder:"例如：knowledge-consensus",titlePlaceholder:"输入中文标题",
           rawHint:"支持 @info {JSON}、## 标题，以及 :::block quote / :::block code / ::: 结束区块。",
           previewParse:"预览解析",seedPublish:"🚀 播种发布",exportJson:"导出 JSON",importJson:"导入 JSON",
-          seededItems:"已播种的规范",noneSeeded:"还没有播种任何规范。",delete:"删除",confirmDelete:"确定删除这篇规范吗？此操作无法撤销。",
+          importLocal:"迁移此浏览器的旧文章",
+          seededItems:"已播种的规范",noneSeeded:"还没有播种任何规范。",delete:"删除",confirmDelete:"确定删除这篇规范吗？此操作无法撤销。",proposalQueue:"修改建议",noProposals:"目前没有待审核建议。",reviewSuggestion:"载入编辑器",
           previewHeading:"解析预览",previewBlocks:"个内容区块",previewInfo:"项信息",parseError:"解析失败：",invalidId:"ID 只能由小写英文字母、数字和连字符组成。",
-          missingFields:"请填写 ID、标题和原文。",published:"规范已发布到本地知识库。",deleted:"规范已删除。",importSuccess:"JSON 导入成功。",
+          missingFields:"请填写 ID、标题和原文。",published:"规范已发布，所有访客现在都能看到。",deleted:"规范已删除。",importSuccess:"JSON 已导入共享知识库。",
           exportReady:"JSON 已导出。",invalidJson:"JSON 格式无效：",invalidDb:"导入文件必须是规范数组。",storageError:"本地存储失败：",
-          profileMenu:"个人主页",guest:"访客",seededBy:"由 Sky 本地播种",signedInAs:"已登录",
+          profileMenu:"个人主页",guest:"访客",seededBy:"由 Sky 社区共享",signedInAs:"已登录",
           navDashboard:"控制台",navLibrary:"知识库",navNew:"新建规范",backHome:"回到首页",notFound:"没有找到这篇规范。",
           mainVersion:"主版本",views:"规范 ID",proposalLogin:"访客",toastCopyError:"复制失败，请检查浏览器权限。",
           searchResults:"搜索结果",editProposal:"修改建议",emptyProposal:"建议内容不能为空。",queueLabel:"本地替代队列",block:"区块",adminAlt:"Sky 控制台标志"
         },
         en: {
           placeholder:"Search or create spec...",explore:"Sky Search",lucky:"I'm Feeling Lucky",seed:"Publish",edit:"Edit",profile:"My Page",admin:"Console",langLabel:"中",
-          brandAlt:"Sky logo",navLabel:"Main navigation",langSwitch:"Switch to Chinese",documentTitle:"Sky — Knowledge evolves in consensus",tagline:"A minimalist consensus wiki · Knowledge evolves in replication",featured:"Explore knowledge",articleCount:"specs seeded locally",
+          brandAlt:"Sky logo",navLabel:"Main navigation",langSwitch:"Switch to Chinese",documentTitle:"Sky — Knowledge evolves in consensus",tagline:"A minimalist consensus wiki · Knowledge evolves in replication",featured:"Explore knowledge",articleCount:"specs",
           emptyTitle:"No specs found",emptyText:"Try another search, or create the first article in the console.",noArticles:"No content yet",official:"Sky Official",by:"By",
           home:"Home",toc:"Contents",infobox:"Infobox",noInfo:"No additional information",editArticle:"Suggest an edit",proposalTitle:"Suggest an edit",
-          proposalHint:"Your suggestion is saved to a local alternative queue and will not overwrite the main version.",proposalLabel:"Suggested content",submitProposal:"Submit suggestion",cancel:"Cancel",
-          proposalSaved:"Your edit suggestion was saved locally.",voteOk:"Helpful",voteFail:"Needs work",copy:"Copy",copied:"Block content copied.",
+          proposalHint:"Your suggestion is added to the shared review queue and will not overwrite the main version.",proposalLabel:"Suggested content",submitProposal:"Submit suggestion",cancel:"Cancel",
+          proposalSaved:"Your edit suggestion was added to the shared review queue.",voteOk:"Helpful",voteFail:"Needs work",copy:"Copy",copied:"Block content copied.",
           profileTitle:"My page",profileBio:"My Sky knowledge links",myArticles:"Contributed specs",allArticles:"Back to explore",profileEmpty:"No contributed specs yet.",
-          console:"Seed Console",consoleLead:"Manage your local knowledge base. Data stays in this browser's localStorage.",adminSignIn:"Admin sign in",adminSignInHint:"Sign in to publish and manage local specs.",
-          adminSetupTitle:"Set a local admin password",adminSetupHint:"Set this once in this browser. This only gates the local console; it does not protect the website. Only a password hash is stored in this browser.",localAdminOnly:"Local admin sign-in only gates this browser's localStorage; it cannot protect shared website data.",
-          account:"Account",password:"Password",confirmPassword:"Confirm password",signIn:"Sign in",setPassword:"Set password",signOut:"Sign out",invalidLogin:"Incorrect account or password.",passwordMismatch:"The passwords do not match.",passwordConfigured:"Local admin password set.",cryptoUnavailable:"Secure password hashing is unavailable in this browser; a local password cannot be set.",loggedIn:"Signed in to the console.",
+          console:"Seed Console",consoleLead:"Manage the shared knowledge base. Articles are stored in Supabase and visible to every visitor.",adminSignIn:"Supabase admin sign in",adminSignInHint:"Sign in with an admin email created and authorized in Supabase Authentication.",
+          account:"Email",password:"Password",confirmPassword:"Confirm password",signIn:"Sign in",setPassword:"Set password",signOut:"Sign out",invalidLogin:"Incorrect email or password.",passwordMismatch:"The passwords do not match.",passwordConfigured:"",cryptoUnavailable:"",loggedIn:"Signed in to the shared console.",
+          adminNotAllowed:"This account is not authorized to administer Sky. Add its user UUID to the Supabase sky_admins table.",authCreateAccount:"Before first use, run supabase/setup.sql, then create and confirm an admin account in Supabase Authentication → Users.",          backendUnavailable:"Unable to connect to Supabase: ",loadingArticles:"Loading shared articles…",
           seedEditor:"Seed editor",seedEditorHint:"Write content in the raw textarea. Publishing overwrites any spec with the same ID. Each block starts with 10 helpful votes.",
           idLabel:"ID (English slug)",titleLabel:"Title",rawLabel:"Raw textarea",idPlaceholder:"e.g. knowledge-consensus",titlePlaceholder:"Enter a title",
           rawHint:"Supports @info {JSON}, ## headings, and :::block quote / :::block code / ::: to close a block.",
           previewParse:"Preview parse",seedPublish:"🚀 Publish seed",exportJson:"Export JSON",importJson:"Import JSON",
-          seededItems:"Seeded specs",noneSeeded:"No specs seeded yet.",delete:"Delete",confirmDelete:"Delete this spec? This cannot be undone.",
+          importLocal:"Migrate this browser's old articles",
+          seededItems:"Seeded specs",noneSeeded:"No specs seeded yet.",delete:"Delete",confirmDelete:"Delete this spec? This cannot be undone.",proposalQueue:"Edit suggestions",noProposals:"No pending suggestions.",reviewSuggestion:"Load into editor",
           previewHeading:"Parse preview",previewBlocks:"content blocks",previewInfo:"info fields",parseError:"Parse failed: ",invalidId:"ID must use lowercase English letters, numbers, and hyphens.",
-          missingFields:"Enter an ID, title, and source text.",published:"Spec published to the local knowledge base.",deleted:"Spec deleted.",importSuccess:"JSON imported successfully.",
+          missingFields:"Enter an ID, title, and source text.",published:"Spec published and now visible to all visitors.",deleted:"Spec deleted.",importSuccess:"JSON imported to the shared knowledge base.",
           exportReady:"JSON exported.",invalidJson:"Invalid JSON: ",invalidDb:"The import file must be an array of specs.",storageError:"Local storage failed: ",
-          profileMenu:"My page",guest:"Guest",seededBy:"Seeded locally by Sky",signedInAs:"Signed in",
+          profileMenu:"My page",guest:"Guest",seededBy:"Shared by the Sky community",signedInAs:"Signed in",
           navDashboard:"Dashboard",navLibrary:"Library",navNew:"New spec",backHome:"Back to home",notFound:"This spec could not be found.",
           mainVersion:"Main version",views:"Spec ID",proposalLogin:"Guest",toastCopyError:"Copy failed. Check browser permissions.",
           searchResults:"Search results",editProposal:"Edit suggestion",emptyProposal:"Suggestion content cannot be empty.",queueLabel:"Local alternative queue",block:"Block",adminAlt:"Sky console logo"
@@ -262,30 +264,14 @@
       };
       const t = key => (i18n[state.lang] && i18n[state.lang][key]) || i18n.en[key] || key;
 
-      function readArray(key) {
+      function readSession() {
         try {
-          const value = JSON.parse(localStorage.getItem(key) || "[]");
-          return Array.isArray(value) ? value : [];
+          const value = JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
+          return value && typeof value.access_token === "string" ? value : null;
         } catch (error) {
-          console.error("Unable to read local data", key, error);
-          return [];
-        }
-      }
-      function readAdminAuth() {
-        try {
-          const stored = localStorage.getItem(ADMIN_AUTH_KEY);
-          if (!stored) return null;
-          const auth = JSON.parse(stored);
-          return auth && typeof auth.salt === "string" && typeof auth.hash === "string" ? auth : null;
-        } catch (error) {
-          console.error("Unable to read local admin credentials",error);
+          console.error("Unable to read Supabase session",error);
           return null;
         }
-      }
-      async function hashPassword(password,salt) {
-        if (!globalThis.crypto?.subtle || !globalThis.crypto?.getRandomValues) throw new Error(t("cryptoUnavailable"));
-        const bytes = await crypto.subtle.digest("SHA-256",new TextEncoder().encode(`${salt}:${password}`));
-        return Array.from(new Uint8Array(bytes),byte => byte.toString(16).padStart(2,"0")).join("");
       }
       function writeJson(key, value) {
         try {
@@ -295,6 +281,97 @@
           showToast(t("storageError") + error.message, true);
           return false;
         }
+      }
+      function setSession(session) {
+        state.session = {
+          ...session,
+          expires_at:session.expires_at || Math.floor(Date.now()/1000) + Number(session.expires_in || 3600)
+        };
+        state.authUser = session.user || state.authUser;
+        writeJson(SESSION_KEY,state.session);
+      }
+      function clearSession() {
+        state.session = null;
+        state.authUser = null;
+        state.adminLoggedIn = false;
+        try { localStorage.removeItem(SESSION_KEY); }
+        catch (error) { console.error("Unable to clear Supabase session",error); }
+      }
+      async function authRequest(path,body) {
+        const response = await fetch(`${SUPABASE_URL}/auth/v1/${path}`,{
+          method:"POST",
+          headers:{"apikey":SUPABASE_PUBLISHABLE_KEY,"Content-Type":"application/json"},
+          body:JSON.stringify(body)
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.msg || result.message || result.error_description || result.error || `HTTP ${response.status}`);
+        return result;
+      }
+      let refreshPromise = null;
+      async function refreshSession() {
+        if (!state.session?.refresh_token) throw new Error(t("invalidLogin"));
+        if (!refreshPromise) {
+          refreshPromise = authRequest("token?grant_type=refresh_token",{refresh_token:state.session.refresh_token})
+            .then(session => { setSession(session); return state.session; })
+            .catch(error => { clearSession(); throw error; })
+            .finally(() => { refreshPromise = null; });
+        }
+        return refreshPromise;
+      }
+      async function requestSupabase(path,{method="GET",body,prefer,auth=true,retry=true}={}) {
+        let session = state.session;
+        if (auth && session?.refresh_token && session.expires_at < Math.floor(Date.now()/1000)+30) {
+          session = await refreshSession();
+        }
+        const headers = {"apikey":SUPABASE_PUBLISHABLE_KEY};
+        if (auth && session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
+        if (body !== undefined) headers["Content-Type"] = "application/json";
+        if (prefer) headers.Prefer = prefer;
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{
+          method,headers,body:body === undefined ? undefined : JSON.stringify(body)
+        });
+        if (response.status === 401 && auth && retry && session?.refresh_token) {
+          await refreshSession();
+          return requestSupabase(path,{method,body,prefer,auth,retry:false});
+        }
+        const text = await response.text();
+        let result = null;
+        try { result = text ? JSON.parse(text) : null; }
+        catch (_) { result = text; }
+        if (!response.ok) {
+          if (response.status === 404 || result?.code === "PGRST205") {
+            throw new Error("Supabase tables are not set up yet. Run supabase/setup.sql in the Supabase SQL Editor.");
+          }
+          throw new Error(result?.message || result?.msg || result?.hint || (typeof result === "string" ? result : `HTTP ${response.status}`));
+        }
+        return result;
+      }
+      function fromArticleRow(row) {
+        return normalizeWiki({
+          id:row.id,title:row.title,blocks:row.blocks,info:row.info,author:row.author,avatar:row.avatar,
+          mainVersion:row.main_version,updatedAt:row.updated_at
+        });
+      }
+      function toArticleRow(article) {
+        return {
+          id:article.id,title:article.title,blocks:article.blocks,info:article.info || {},
+          author:article.author || "Sky Official",avatar:article.avatar || "S",
+          main_version:article.mainVersion || {author:"Sky Official",votes:{ok:10,fail:0,copy:0}},
+          updated_at:article.updatedAt || new Date().toISOString()
+        };
+      }
+      async function loadArticles() {
+        const rows = await requestSupabase("sky_articles?select=*&order=updated_at.desc",{auth:false});
+        state.db = (rows || []).map(fromArticleRow).filter(Boolean);
+        state.backendError = "";
+      }
+      async function loadProposals() {
+        state.proposals = await requestSupabase("sky_edit_proposals?select=id,article_id,author,content,created_at&order=created_at.desc");
+      }
+      async function checkAdmin() {
+        if (!state.session?.access_token) return false;
+        const result = await requestSupabase("rpc/is_sky_admin",{method:"POST",body:{}});
+        return result === true;
       }
       function normalizeWiki(item) {
         if (!item || typeof item !== "object" || typeof item.id !== "string" || typeof item.title !== "string") return null;
@@ -327,15 +404,19 @@
           } : {author:"Sky Official",votes:{ok:10,fail:0,copy:0}}
         };
       }
-      const initialDb = readArray(DB_KEY).map(normalizeWiki).filter(Boolean);
       const state = {
-        db:initialDb,
+        db:[],
         lang:(() => { try { return localStorage.getItem(LANG_KEY) === "en" ? "en" : "zh"; } catch (_) { return "zh"; } })(),
         page:window.location.hash === "#admin" ? "admin" : "home",
         query:"",
         articleId:"",
         user:null,
+        authUser:null,
+        session:readSession(),
         adminLoggedIn:false,
+        proposals:[],
+        backendError:"",
+        loading:true,
         preview:null,
         proposalId:"",
         proposalDraft:"",
@@ -353,13 +434,6 @@
       const avatarHtml = (name, size="") => `<span class="avatar ${size}" aria-hidden="true">${esc(avatarLetter(name))}</span>`;
       const authorOf = article => article.author || (article.mainVersion && article.mainVersion.author) || t("official");
 
-      function storeDb(nextDb=state.db) {
-        if (writeJson(DB_KEY,nextDb)) {
-          state.db = nextDb;
-          return true;
-        }
-        return false;
-      }
       function showToast(message,isError=false) {
         const node = document.getElementById("toast");
         node.textContent = message;
@@ -410,7 +484,7 @@
           return `<article class="wiki-card" data-action="open-article" data-id="${esc(article.id)}" tabindex="0" role="link"><div class="card-topline"><span class="card-tag">${esc(article.id)}</span><span class="card-votes">✓ ${votes}</span></div><h3>${esc(article.title)}</h3><p>${esc(summary)}</p><span class="card-author">${avatarHtml(authorOf(article))}<span>${esc(authorOf(article))}</span></span></article>`;
         }).join("") : `<div class="empty-state"><strong>${t("emptyTitle")}</strong>${t("emptyText")}</div>`;
         const heading = state.query ? t("searchResults") : t("featured");
-        return `<section class="hero"><img id="heroLogo" class="hero-logo" src="${logoSources.light}" alt="${t("brandAlt")}"><p class="hero-subtitle">${t("tagline")}</p></section><section class="search-area"><form class="search-form" id="searchForm"><label class="sr-only" for="searchInput">${t("placeholder")}</label><input id="searchInput" class="search-input" name="query" value="${esc(state.query)}" placeholder="${t("placeholder")}" autocomplete="off"><button class="btn-sky" type="submit">${t("explore")}</button></form><div class="hero-actions"><button class="btn-quiet" type="button" data-action="lucky">${t("lucky")}</button><button class="btn-quiet" type="button" data-action="admin">${t("seed")}</button></div></section><section class="page-shell"><div class="section-heading"><h1>${heading}</h1><p>${state.db.length} ${t("articleCount")}</p></div><div class="wiki-grid">${list}</div><footer class="site-footer">Sky · ${t("seededBy")}</footer></section>`;
+        return `<section class="hero"><img id="heroLogo" class="hero-logo" src="${logoSources.light}" alt="${t("brandAlt")}"><p class="hero-subtitle">${t("tagline")}</p></section><section class="search-area"><form class="search-form" id="searchForm"><label class="sr-only" for="searchInput">${t("placeholder")}</label><input id="searchInput" class="search-input" name="query" value="${esc(state.query)}" placeholder="${t("placeholder")}" autocomplete="off"><button class="btn-sky" type="submit">${t("explore")}</button></form><div class="hero-actions"><button class="btn-quiet" type="button" data-action="lucky">${t("lucky")}</button><button class="btn-quiet" type="button" data-action="admin">${t("seed")}</button></div></section><section class="page-shell">${state.backendError ? `<div class="backend-alert">${t("backendUnavailable")}${esc(state.backendError)}</div>` : ""}<div class="section-heading"><h1>${heading}</h1><p>${state.db.length} ${t("articleCount")}</p></div><div class="wiki-grid">${state.loading && !state.db.length ? `<div class="empty-state">${t("loadingArticles")}</div>` : list}</div><footer class="site-footer">Sky · ${t("seededBy")}</footer></section>`;
       }
       function renderArticle() {
         const article = state.db.find(item => item.id === state.articleId);
@@ -434,13 +508,13 @@
       }
       function renderAdmin() {
         if (!state.adminLoggedIn) {
-          const configured = Boolean(readAdminAuth());
-          return `<section class="page-shell"><form class="login-card" id="loginForm"><h1>${configured ? t("adminSignIn") : t("adminSetupTitle")}</h1><p>${configured ? t("adminSignInHint") : t("adminSetupHint")}<br><br>${t("localAdminOnly")}</p><label class="field"><span>${t("account")}</span><input name="account" value="${ADMIN_ACCOUNT}" autocomplete="username" readonly required></label><label class="field"><span>${t("password")}</span><input name="password" type="password" minlength="8" autocomplete="${configured ? "current-password" : "new-password"}" required></label>${configured ? "" : `<label class="field"><span>${t("confirmPassword")}</span><input name="confirmPassword" type="password" minlength="8" autocomplete="new-password" required></label>`}<button class="btn-sky" type="submit">${configured ? t("signIn") : t("setPassword")}</button></form></section>`;
+          return `<section class="page-shell">${state.backendError ? `<div class="backend-alert">${t("backendUnavailable")}${esc(state.backendError)}</div>` : ""}<form class="login-card" id="loginForm"><h1>${t("adminSignIn")}</h1><p>${t("adminSignInHint")}<br><br>${t("authCreateAccount")}</p><label class="field"><span>${t("account")}</span><input name="email" type="email" autocomplete="username" required></label><label class="field"><span>${t("password")}</span><input name="password" type="password" autocomplete="current-password" required></label><button class="btn-sky" type="submit">${t("signIn")}</button></form></section>`;
         }
         const rows = state.db.length ? state.db.map(article => `<div class="seeded-item"><div><strong>${esc(article.title)}</strong><small>${esc(article.id)} · ${article.blocks.length} ${t("previewBlocks")}</small></div><button class="delete-btn" type="button" data-action="delete" data-id="${esc(article.id)}">${t("delete")}</button></div>`).join("") : `<p class="info-empty">${t("noneSeeded")}</p>`;
+        const proposals = state.proposals.length ? state.proposals.map(proposal => `<div class="seeded-item"><div><strong>${esc(proposal.article_id)} · ${esc(proposal.author)}</strong><small>${esc(proposal.content.slice(0,180))}</small></div><button class="btn-quiet" type="button" data-action="load-proposal" data-proposal-id="${proposal.id}">${t("reviewSuggestion")}</button></div>`).join("") : `<p class="info-empty">${t("noProposals")}</p>`;
         const preview = state.preview ? `<div class="preview-box"><h3>${t("previewHeading")} · ${esc(state.preview.title || "")}</h3><p>${state.preview.blocks.length} ${t("previewBlocks")} · ${Object.keys(state.preview.info).length} ${t("previewInfo")}</p><ul>${state.preview.blocks.map(block => `<li><strong>${esc(block.type)}</strong> — ${esc(block.content.slice(0,160))}</li>`).join("")}</ul></div>` : "";
         const draft = state.seedDraft || {id:"",title:"",raw:""};
-        return `<div class="admin-shell"><aside class="admin-sidebar"><div class="admin-brand">${logoImg("dark",t("adminAlt"),"")}</div><div class="admin-sidebar-label">${t("console")}</div><button class="admin-nav active" type="button" data-action="admin">◧ ${t("navDashboard")}</button><button class="admin-nav" type="button" data-action="library">▤ ${t("navLibrary")}</button><button class="admin-nav" type="button" data-action="new-seed">＋ ${t("navNew")}</button><div class="admin-sidebar-label">${t("signedInAs")}</div><button class="admin-nav" type="button" data-action="logout">↪ ${t("signOut")}</button></aside><section class="admin-main"><div class="admin-main-inner"><h1>${t("console")}</h1><p class="admin-lead">${t("consoleLead")}</p><form class="admin-card" id="seedForm"><h2>${t("seedEditor")}</h2><p class="admin-lead">${t("seedEditorHint")}</p><div class="form-grid"><label class="field"><span>${t("idLabel")}</span><input name="id" value="${esc(draft.id)}" placeholder="${t("idPlaceholder")}" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required></label><label class="field"><span>${t("titleLabel")}</span><input name="title" value="${esc(draft.title)}" placeholder="${t("titlePlaceholder")}" required></label></div><label class="field"><span>${t("rawLabel")}</span><textarea name="raw" required>${esc(draft.raw)}</textarea><span class="field-hint">${t("rawHint")}</span></label><div class="form-actions"><button class="btn-quiet" type="button" data-action="preview-parse">${t("previewParse")}</button><button class="btn-sky" type="submit">${t("seedPublish")}</button><button class="btn-quiet" type="button" data-action="export">${t("exportJson")}</button><button class="btn-quiet" type="button" data-action="import">${t("importJson")}</button><input id="importFile" class="sr-only" type="file" accept=".json,application/json" aria-label="${t("importJson")}"></div>${preview}</form><section class="admin-card"><h2>${t("seededItems")} <span class="card-votes">(${state.db.length})</span></h2><div class="seeded-list">${rows}</div></section></div></section></div>`;
+        return `<div class="admin-shell"><aside class="admin-sidebar"><div class="admin-brand">${logoImg("dark",t("adminAlt"),"")}</div><div class="admin-sidebar-label">${t("console")}</div><button class="admin-nav active" type="button" data-action="admin">◧ ${t("navDashboard")}</button><button class="admin-nav" type="button" data-action="library">▤ ${t("navLibrary")}</button><button class="admin-nav" type="button" data-action="new-seed">＋ ${t("navNew")}</button><div class="admin-sidebar-label">${t("signedInAs")}</div><button class="admin-nav" type="button" data-action="logout">↪ ${t("signOut")}</button></aside><section class="admin-main"><div class="admin-main-inner"><h1>${t("console")}</h1><p class="admin-lead">${t("consoleLead")} · ${esc(state.user || "")}</p>${state.backendError ? `<div class="backend-alert">${t("backendUnavailable")}${esc(state.backendError)}</div>` : ""}<form class="admin-card" id="seedForm"><h2>${t("seedEditor")}</h2><p class="admin-lead">${t("seedEditorHint")}</p><div class="form-grid"><label class="field"><span>${t("idLabel")}</span><input name="id" value="${esc(draft.id)}" placeholder="${t("idPlaceholder")}" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required></label><label class="field"><span>${t("titleLabel")}</span><input name="title" value="${esc(draft.title)}" placeholder="${t("titlePlaceholder")}" required></label></div><label class="field"><span>${t("rawLabel")}</span><textarea name="raw" required>${esc(draft.raw)}</textarea><span class="field-hint">${t("rawHint")}</span></label><div class="form-actions"><button class="btn-quiet" type="button" data-action="preview-parse">${t("previewParse")}</button><button class="btn-sky" type="submit">${t("seedPublish")}</button><button class="btn-quiet" type="button" data-action="export">${t("exportJson")}</button><button class="btn-quiet" type="button" data-action="import">${t("importJson")}</button><button class="btn-quiet" type="button" data-action="import-local">${t("importLocal")}</button><input id="importFile" class="sr-only" type="file" accept=".json,application/json" aria-label="${t("importJson")}"></div>${preview}</form><section class="admin-card"><h2>${t("proposalQueue")} <span class="card-votes">(${state.proposals.length})</span></h2><div class="seeded-list">${proposals}</div></section><section class="admin-card"><h2>${t("seededItems")} <span class="card-votes">(${state.db.length})</span></h2><div class="seeded-list">${rows}</div></section></div></section></div>`;
       }
       function render() {
         updateLogos();
@@ -550,7 +624,7 @@
             ? block.content
             : `:::block ${block.type}\n${block.content}\n:::`).join("\n\n");
       }
-      function publishSeed(form) {
+      async function publishSeed(form) {
         const id = formValue(form,"id").trim();
         const title = formValue(form,"title").trim();
         const raw = formValue(form,"raw");
@@ -559,22 +633,19 @@
         if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) { showToast(t("invalidId"),true); return; }
         try {
           const parsed = parseWiki(raw);
-          const now = new Date().toISOString();
           const article = {
-            id,title,blocks:parsed.blocks.map(block => ({...block,author:state.user || ADMIN_ACCOUNT,avatar:avatarLetter(state.user || ADMIN_ACCOUNT),votes:{ok:10,fail:0,copy:0}})),
-            info:parsed.info,author:state.user || ADMIN_ACCOUNT,avatar:avatarLetter(state.user || ADMIN_ACCOUNT),
-            mainVersion:{author:"Sky Official",votes:{ok:10,fail:0,copy:0}},updatedAt:now
+            id,title,blocks:parsed.blocks.map(block => ({...block,author:state.user || "Sky Official",avatar:avatarLetter(state.user || "Sky Official"),votes:{ok:10,fail:0,copy:0}})),
+            info:parsed.info,author:state.user || "Sky Official",avatar:avatarLetter(state.user || "Sky Official"),
+            mainVersion:{author:"Sky Official",votes:{ok:10,fail:0,copy:0}},updatedAt:new Date().toISOString()
           };
-          const nextDb = state.db.slice();
-          const index = nextDb.findIndex(item => item.id === id);
-          if (index === -1) nextDb.unshift(article); else nextDb[index] = article;
-          if (!storeDb(nextDb)) return;
+          await requestSupabase("sky_articles?on_conflict=id",{method:"POST",body:[toArticleRow(article)],prefer:"resolution=merge-duplicates,return=minimal"});
+          await loadArticles();
           state.preview = null;
           state.seedDraft = null;
           state.query = "";
           render();
           showToast(t("published"));
-        } catch (error) { showToast(t("parseError") + error.message,true); }
+        } catch (error) { showToast(error.message,true); }
       }
       function exportDb() {
         const blob = new Blob([JSON.stringify(state.db,null,2)],{type:"application/json"});
@@ -587,22 +658,44 @@
         URL.revokeObjectURL(link.href);
         showToast(t("exportReady"));
       }
-      function importDb(file) {
+      async function importDb(file) {
         if (!file) return;
         const reader = new FileReader();
         reader.onload = () => {
+          void (async () => {
           try {
             const parsed = JSON.parse(String(reader.result));
             if (!Array.isArray(parsed)) throw new Error(t("invalidDb"));
             const clean = parsed.map(normalizeWiki);
             if (clean.some(item => !item)) throw new Error(t("invalidDb"));
-            if (!storeDb(clean)) return;
+            if (clean.length) {
+              await requestSupabase("sky_articles?on_conflict=id",{method:"POST",body:clean.map(toArticleRow),prefer:"resolution=merge-duplicates,return=minimal"});
+            }
+            await loadArticles();
             render();
             showToast(t("importSuccess"));
-          } catch (error) { showToast(t("invalidJson") + error.message,true); }
+          } catch (error) { showToast(error.message,true); }
+          })();
         };
         reader.onerror = () => showToast(t("invalidJson") + (reader.error?.message || "File read error"),true);
         reader.readAsText(file);
+      }
+      async function importLegacyDb() {
+        let raw;
+        try { raw = localStorage.getItem(LEGACY_DB_KEY); }
+        catch (error) { showToast(t("storageError") + error.message,true); return; }
+        if (!raw) { showToast(t("noneSeeded"),true); return; }
+        try {
+          const parsed = JSON.parse(raw);
+          if (!Array.isArray(parsed)) throw new Error(t("invalidDb"));
+          const articles = parsed.map(normalizeWiki);
+          if (articles.some(article => !article)) throw new Error(t("invalidDb"));
+          if (!articles.length) { showToast(t("noneSeeded"),true); return; }
+          await requestSupabase("sky_articles?on_conflict=id",{method:"POST",body:articles.map(toArticleRow),prefer:"resolution=merge-duplicates,return=minimal"});
+          await loadArticles();
+          render();
+          showToast(t("importSuccess"));
+        } catch (error) { showToast(t("invalidJson") + error.message,true); }
       }
       function setPage(page) {
         state.page = page;
@@ -621,17 +714,12 @@
         state.articleId = id;
         setPage("article");
       }
-      function vote(index,kind) {
-        const articleIndex = state.db.findIndex(item => item.id === state.articleId);
-        const article = state.db[articleIndex];
-        if (!article || !article.blocks[index]) return;
-        const nextDb = state.db.slice();
-        const nextArticle = {...article,blocks:article.blocks.slice()};
-        const block = {...article.blocks[index],votes:{...article.blocks[index].votes}};
-        block.votes[kind] = (Number(block.votes[kind]) || 0) + 1;
-        nextArticle.blocks[index] = block;
-        nextDb[articleIndex] = nextArticle;
-        if (storeDb(nextDb)) render();
+      async function vote(index,kind) {
+        try {
+          await requestSupabase("rpc/sky_vote_block",{method:"POST",body:{p_article_id:state.articleId,p_block_index:index,p_kind:kind}});
+          await loadArticles();
+          render();
+        } catch (error) { showToast(error.message,true); }
       }
       async function copyBlock(index) {
         const articleIndex = state.db.findIndex(item => item.id === state.articleId);
@@ -652,37 +740,31 @@
             field.remove();
             if (!copied) throw new Error("Clipboard copy was denied");
           }
-          const nextDb = state.db.slice();
-          const nextArticle = {...article,blocks:article.blocks.slice()};
-          const block = {...article.blocks[index],votes:{...article.blocks[index].votes}};
-          block.votes.copy = (Number(block.votes.copy) || 0) + 1;
-          nextArticle.blocks[index] = block;
-          nextDb[articleIndex] = nextArticle;
-          if (storeDb(nextDb)) { render(); showToast(t("copied")); }
-        } catch (_) {
-          showToast(t("toastCopyError"),true);
+          await requestSupabase("rpc/sky_vote_block",{method:"POST",body:{p_article_id:state.articleId,p_block_index:index,p_kind:"copy"}});
+          await loadArticles();
+          render();
+          showToast(t("copied"));
+        } catch (error) {
+          showToast(error.message || t("toastCopyError"),true);
         }
       }
-      function saveProposal(form) {
+      async function saveProposal(form) {
         const content = formValue(form,"proposal").trim();
         if (!content) { showToast(t("emptyProposal"),true); return; }
-        const queue = readArray(QUEUE_KEY);
         const article = state.db.find(item => item.id === state.articleId);
         if (!article) return;
-        queue.push({
-          id:article.id,author:state.user || t("proposalLogin"),createdAt:new Date().toISOString(),
-          blocks:[{type:"text",content,author:state.user || t("proposalLogin"),avatar:avatarLetter(state.user || "G"),votes:{ok:0,fail:0,copy:0}}]
-        });
-        if (!writeJson(QUEUE_KEY,queue)) return;
-        state.proposalId = "";
-        state.proposalDraft = "";
-        state.flashBlock = 0;
-        state.flashAuthor = state.user || t("proposalLogin");
-        render();
-        showToast(t("proposalSaved"));
-        setTimeout(() => { state.flashBlock = -1; render(); },2600);
+        try {
+          await requestSupabase("sky_edit_proposals",{method:"POST",body:{article_id:article.id,author:state.user || t("proposalLogin"),content}});
+          state.proposalId = "";
+          state.proposalDraft = "";
+          state.flashBlock = 0;
+          state.flashAuthor = state.user || t("proposalLogin");
+          render();
+          showToast(t("proposalSaved"));
+          setTimeout(() => { state.flashBlock = -1; render(); },2600);
+        } catch (error) { showToast(error.message,true); }
       }
-      document.addEventListener("click",event => {
+      document.addEventListener("click",async event => {
         const button = event.target.closest("[data-action]");
         if (!button) return;
         const action = button.dataset.action;
@@ -695,6 +777,16 @@
           if (first) openArticle(first.id); else showToast(t("emptyTitle"));
         }
         else if (action === "edit") { state.proposalId = state.articleId; state.proposalDraft = ""; render(); document.querySelector(".proposal-input")?.focus(); }
+        else if (action === "load-proposal") {
+          const proposal = state.proposals.find(item => String(item.id) === button.dataset.proposalId);
+          const article = proposal && state.db.find(item => item.id === proposal.article_id);
+          if (proposal && article) {
+            state.seedDraft = {id:article.id,title:article.title,raw:proposal.content};
+            state.preview = null;
+            render();
+            document.getElementById("seedForm")?.scrollIntoView({behavior:"smooth",block:"start"});
+          }
+        }
         else if (action === "cancel-proposal") { state.proposalId = ""; state.proposalDraft = ""; render(); }
         else if (action === "vote") vote(Number(button.dataset.index),button.dataset.kind);
         else if (action === "copy") copyBlock(Number(button.dataset.index));
@@ -713,12 +805,26 @@
         }
         else if (action === "export") exportDb();
         else if (action === "import") document.getElementById("importFile")?.click();
+        else if (action === "import-local") await importLegacyDb();
         else if (action === "delete") {
           if (!window.confirm(t("confirmDelete"))) return;
-          const nextDb = state.db.filter(article => article.id !== button.dataset.id);
-          if (storeDb(nextDb)) { render(); showToast(t("deleted")); }
+          try {
+            await requestSupabase(`sky_articles?id=eq.${encodeURIComponent(button.dataset.id)}`,{method:"DELETE"});
+            await loadArticles();
+            render();
+            showToast(t("deleted"));
+          } catch (error) { showToast(error.message,true); }
         }
-        else if (action === "logout") { state.adminLoggedIn = false; state.user = null; setPage("admin"); }
+        else if (action === "logout") {
+          try {
+            if (state.session?.access_token) {
+              await fetch(`${SUPABASE_URL}/auth/v1/logout`,{method:"POST",headers:{apikey:SUPABASE_PUBLISHABLE_KEY,Authorization:`Bearer ${state.session.access_token}`}});
+            }
+          } catch (error) { console.error("Supabase sign-out failed",error); }
+          clearSession();
+          state.user = null;
+          setPage("admin");
+        }
         else if (action === "new-seed") { setPage("admin"); setTimeout(() => document.querySelector('[name="id"]')?.focus(),0); }
         else if (action === "library") { state.query = ""; setPage("home"); }
       });
@@ -731,35 +837,31 @@
           if (exact) openArticle(exact.id); else { setPage("home"); }
         } else if (form.id === "loginForm") {
           event.preventDefault();
-          if (formValue(form,"account") !== ADMIN_ACCOUNT) { showToast(t("invalidLogin"),true); return; }
-          const password = formValue(form,"password");
-          if (!readAdminAuth()) {
-            if (password !== formValue(form,"confirmPassword")) { showToast(t("passwordMismatch"),true); return; }
-            try {
-              const salt = Array.from(crypto.getRandomValues(new Uint8Array(16)),byte => byte.toString(16).padStart(2,"0")).join("");
-              const hash = await hashPassword(password,salt);
-              if (!writeJson(ADMIN_AUTH_KEY,{salt,hash})) return;
-              showToast(t("passwordConfigured"));
-            } catch (error) { showToast(error.message || t("cryptoUnavailable"),true); return; }
-          } else {
-            try {
-              const auth = readAdminAuth();
-              if (!auth || await hashPassword(password,auth.salt) !== auth.hash) { showToast(t("invalidLogin"),true); return; }
-            } catch (error) { showToast(error.message || t("cryptoUnavailable"),true); return; }
-          }
-            const users = readArray(USERS_KEY);
-            if (!users.some(user => user && user.id === ADMIN_ACCOUNT)) users.push({id:ADMIN_ACCOUNT,name:"Skywalker",avatar:"S"});
-            if (!writeJson(USERS_KEY,users)) return;
+          try {
+            const email = formValue(form,"email").trim();
+            const password = formValue(form,"password");
+            const session = await authRequest("token?grant_type=password",{email,password});
+            setSession(session);
+            state.authUser = session.user;
+            if (!await checkAdmin()) {
+              clearSession();
+              showToast(t("adminNotAllowed"),true);
+              return;
+            }
             state.adminLoggedIn = true;
-            state.user = ADMIN_ACCOUNT;
+            state.user = session.user?.email || email;
+            await loadProposals();
             render();
             showToast(t("loggedIn"));
+          } catch (error) {
+            showToast(error.message || t("invalidLogin"),true);
+          }
         } else if (form.id === "seedForm") {
           event.preventDefault();
-          publishSeed(form);
+          await publishSeed(form);
         } else if (form.id === "proposalForm") {
           event.preventDefault();
-          saveProposal(form);
+          await saveProposal(form);
         }
       });
       document.addEventListener("change",event => {
@@ -791,6 +893,28 @@
         }
       });
       render();
+      async function initializeBackend() {
+        try {
+          await loadArticles();
+          if (state.session?.access_token) {
+            state.authUser = state.session.user || null;
+            if (await checkAdmin()) {
+              state.adminLoggedIn = true;
+              state.user = state.authUser?.email || "";
+              await loadProposals();
+            } else {
+              clearSession();
+            }
+          }
+        } catch (error) {
+          state.backendError = error.message;
+          if (state.session?.access_token && !state.adminLoggedIn) clearSession();
+        } finally {
+          state.loading = false;
+          render();
+        }
+      }
+      void initializeBackend();
     })();
   </script>
 </body>
