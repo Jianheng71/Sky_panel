@@ -1,0 +1,821 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#F8FAFC">
+  <title>Sky — Knowledge evolves in consensus</title>
+  <style>
+    :root {
+      --blue:#1363A8;
+      --cyan:#2EA6B0;
+      --light:#E8F1FA;
+      --bg:#F8FAFC;
+      --text:#111827;
+      --white:#FFFFFF;
+      --muted:#667085;
+      --line:#DCE7F1;
+      --green:#138A52;
+      --shadow:0 4px 20px rgba(19,99,168,.06);
+      font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+      color:var(--text);
+      background:var(--bg);
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; min-width:320px; min-height:100vh; background:var(--bg); color:var(--text); }
+    button,input,textarea { font:inherit; }
+    button { cursor:pointer; }
+    button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible { outline:3px solid rgba(19,99,168,.28); outline-offset:2px; }
+    a { color:inherit; text-decoration:none; }
+    .site-header { height:68px; display:flex; align-items:center; justify-content:space-between; padding:0 max(28px,calc((100vw - 1260px)/2)); background:rgba(255,255,255,.92); border-bottom:1px solid rgba(220,231,241,.75); position:relative; z-index:2; }
+    .brand { display:flex; align-items:center; min-width:100px; }
+    .brand img { width:76px; height:40px; object-fit:contain; }
+    .header-actions { display:flex; align-items:center; gap:10px; }
+    .lang-toggle { height:28px; min-width:54px; border-radius:99px; padding:0 12px; border:1px solid var(--light); color:var(--text); background:var(--white); font-size:12px; }
+    .lang-toggle:hover { border-color:var(--blue); }
+    .header-link { border:0; background:transparent; padding:9px 12px; color:#344054; font-size:14px; }
+    .header-link:hover { color:var(--blue); }
+    .btn-sky { display:inline-flex; align-items:center; justify-content:center; gap:8px; border:0; border-radius:10px; padding:11px 17px; color:#fff; font-weight:600; background:var(--blue); transition:background .18s,transform .18s,box-shadow .18s; }
+    .btn-sky:hover { background:#0A3D8F; box-shadow:0 5px 16px rgba(19,99,168,.2); transform:translateY(-1px); }
+    .btn-sky:active { transform:translateY(0); }
+    .btn-quiet { border:1px solid var(--line); border-radius:10px; padding:10px 14px; color:#344054; background:#fff; }
+    .btn-quiet:hover { border-color:#9bbbd6; color:var(--blue); }
+    .page-shell { width:min(1260px,calc(100% - 48px)); margin:0 auto; }
+    .hero { height:200px; background:linear-gradient(180deg,var(--light) 0%,#fff 100%); text-align:center; padding:20px 24px 22px; }
+    .hero-logo { display:block; width:220px; height:90px; object-fit:contain; margin:0 auto 7px; }
+    .hero-subtitle { margin:0; color:#667085; font-size:13px; letter-spacing:.02em; }
+    .search-area { width:min(760px,calc(100% - 40px)); margin:-19px auto 0; position:relative; z-index:1; }
+    .search-form { display:flex; gap:10px; }
+    .search-input { height:52px; flex:1; min-width:0; padding:0 19px; border:1.5px solid var(--light); border-radius:28px; background:var(--white); color:var(--text); box-shadow:0 3px 14px rgba(22,49,82,.045); transition:border-color .18s,box-shadow .18s; }
+    .search-input:focus { outline:0; border-color:var(--blue); box-shadow:0 0 0 4px rgba(19,99,168,.12); }
+    .search-form .btn-sky { height:52px; min-width:114px; border-radius:28px; }
+    .hero-actions { display:flex; justify-content:center; gap:11px; padding-top:15px; }
+    .hero-actions button { min-width:124px; }
+    .section-heading { display:flex; align-items:baseline; justify-content:space-between; gap:14px; margin:36px 0 18px; }
+    .section-heading h1,.section-heading h2 { margin:0; font-size:20px; letter-spacing:-.02em; }
+    .section-heading p { margin:0; color:var(--muted); font-size:13px; }
+    .wiki-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; padding-bottom:60px; }
+    .wiki-card { min-height:176px; display:flex; flex-direction:column; padding:21px; border:1.5px solid var(--light); border-radius:16px; background:#fff; box-shadow:var(--shadow); transition:transform .18s,border-color .18s,box-shadow .18s; cursor:pointer; }
+    .wiki-card:hover { transform:translateY(-3px); border-color:#bfd6ea; box-shadow:0 10px 26px rgba(19,99,168,.1); }
+    .card-topline { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .card-tag { padding:5px 9px; border-radius:99px; background:#eff7fb; color:#277d92; font-size:11px; font-weight:600; }
+    .card-votes { color:var(--muted); font-size:12px; }
+    .wiki-card h3 { margin:18px 0 9px; font-size:17px; line-height:1.4; }
+    .wiki-card p { margin:0; color:#667085; font-size:13px; line-height:1.7; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .card-author { display:flex; align-items:center; gap:7px; margin-top:auto; padding-top:14px; color:#7b8492; font-size:11px; }
+    .avatar { width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center; flex:none; border-radius:50%; color:#fff; background:linear-gradient(145deg,#48aeb5,#1363a8); font-size:11px; font-weight:700; }
+    .avatar.large { width:96px; height:96px; font-size:28px; box-shadow:0 8px 24px rgba(19,99,168,.14); }
+    .empty-state { grid-column:1/-1; padding:54px 20px; text-align:center; color:#7a8492; border:1px dashed #cbd8e4; border-radius:16px; background:#fff; }
+    .empty-state strong { display:block; margin-bottom:8px; color:#344054; font-size:16px; }
+    .site-footer { padding:22px 0 34px; color:#98a2b3; border-top:1px solid var(--line); text-align:center; font-size:12px; }
+    .article-head { padding:34px 0 22px; }
+    .breadcrumbs { margin-bottom:14px; color:#7c8795; font-size:12px; }
+    .breadcrumbs button { border:0; padding:0; color:var(--blue); background:none; font-size:inherit; }
+    .article-title-row { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; }
+    .article-title-row h1 { margin:0; font-size:34px; line-height:1.2; letter-spacing:-.035em; }
+    .article-meta { display:flex; align-items:center; gap:8px; margin-top:14px; color:#7b8492; font-size:12px; }
+    .article-layout { display:grid; grid-template-columns:220px minmax(0,1fr) 245px; gap:22px; align-items:start; padding-bottom:72px; }
+    .side-card,.info-card { position:sticky; top:18px; padding:18px; border:1px solid var(--line); border-radius:14px; background:#fff; }
+    .side-card h2,.info-card h2 { margin:0 0 13px; font-size:13px; }
+    .toc { display:flex; flex-direction:column; gap:4px; }
+    .toc a { padding:7px 9px; border-radius:7px; color:#687385; font-size:12px; line-height:1.4; }
+    .toc a:hover { color:var(--blue); background:#f0f6fb; }
+    .blocks { display:flex; flex-direction:column; gap:14px; }
+    .article-block { position:relative; padding:20px 22px 15px; border:1px solid #e6edf4; border-left:4px solid var(--cyan); border-radius:11px; background:#fff; box-shadow:0 3px 14px rgba(16,40,70,.035); scroll-margin-top:20px; }
+    .article-block h2 { margin:0 0 12px; font-size:21px; line-height:1.35; }
+    .article-block p,.block-content { margin:0; color:#3f4a5a; font-size:14px; line-height:1.85; overflow-wrap:anywhere; }
+    .article-block blockquote { margin:0; padding:3px 0 3px 14px; color:#3f4a5a; border-left:2px solid #b6d8dc; line-height:1.8; white-space:pre-wrap; }
+    .article-block pre { white-space:pre-wrap; overflow-wrap:anywhere; color:#334155; background:#f4f7fa; padding:13px; border-radius:8px; font-size:12px; }
+    .block-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:14px; padding-top:11px; border-top:1px solid #f0f2f5; }
+    .block-author { display:flex; align-items:center; gap:6px; color:#8a94a3; font-size:11px; }
+    .block-actions { display:flex; align-items:center; gap:5px; }
+    .vote-btn { display:flex; align-items:center; gap:4px; padding:5px 7px; border:0; border-radius:7px; color:#748091; background:transparent; font-size:11px; }
+    .vote-btn:hover { color:var(--blue); background:#f1f6fa; }
+    .contributor-stack { display:flex; align-items:center; margin-right:5px; }
+    .contributor-stack .avatar { width:23px; height:23px; margin-left:-6px; border:2px solid white; box-shadow:0 1px 4px rgba(16,24,40,.2); animation:greenFlash 1.1s ease-out; }
+    .contributor-stack .avatar:first-child { margin-left:0; }
+    @keyframes greenFlash { 0% { box-shadow:0 0 0 0 rgba(34,197,94,.8); background:#22c55e; } 100% { box-shadow:0 0 0 7px rgba(34,197,94,0); } }
+    .info-row { display:grid; grid-template-columns:1fr; gap:4px; padding:9px 0; border-top:1px solid #eff2f5; font-size:11px; }
+    .info-row span { color:#8993a1; }
+    .info-row strong { font-weight:500; overflow-wrap:anywhere; }
+    .info-empty { color:#8993a1; font-size:12px; line-height:1.6; }
+    .article-notice { margin:0 0 15px; padding:12px 14px; border:1px solid #cde8d8; border-radius:9px; color:#226742; background:#f0fbf4; font-size:13px; }
+    .proposal-panel { margin-top:18px; padding:17px; border:1px solid var(--line); border-radius:12px; background:#fff; }
+    .proposal-panel h2 { margin:0 0 8px; font-size:16px; }
+    .proposal-panel p { margin:0 0 12px; color:#667085; font-size:12px; line-height:1.6; }
+    .profile-wrap { width:min(420px,100%); margin:54px auto 80px; text-align:center; }
+    .profile-wrap h1 { margin:19px 0 5px; font-size:24px; }
+    .profile-wrap .profile-bio { margin:0 0 24px; color:#778292; font-size:13px; }
+    .profile-links { display:flex; flex-direction:column; gap:11px; }
+    .profile-links button { min-height:48px; width:100%; padding:10px 16px; border:1px solid var(--light); border-radius:99px; color:#243347; background:#fff; box-shadow:0 3px 12px rgba(19,99,168,.05); text-align:center; }
+    .profile-links button:hover { border-color:#a9cce6; color:var(--blue); transform:translateY(-1px); }
+    .profile-caption { margin-top:22px; color:#a0a8b3; font-size:11px; }
+    .admin-shell { min-height:calc(100vh - 68px); display:grid; grid-template-columns:225px 1fr; background:#fff; }
+    .admin-sidebar { padding:24px 16px; color:#c6d0db; background:#111827; }
+    .admin-brand { display:flex; align-items:center; padding:3px 9px 28px; }
+    .admin-brand img { width:90px; height:42px; object-fit:contain; }
+    .admin-sidebar-label { padding:12px 10px 7px; color:#697586; font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
+    .admin-nav { width:100%; display:flex; align-items:center; gap:10px; padding:11px 10px; border:0; border-radius:7px; color:#c6d0db; background:transparent; text-align:left; font-size:13px; }
+    .admin-nav.active,.admin-nav:hover { color:#fff; background:#263447; }
+    .admin-main { min-width:0; padding:35px clamp(22px,5vw,68px); background:#fff; }
+    .admin-main-inner { max-width:950px; margin:0 auto; }
+    .admin-main h1 { margin:0 0 8px; font-size:25px; letter-spacing:-.03em; }
+    .admin-lead { margin:0 0 27px; color:#788394; font-size:13px; line-height:1.6; }
+    .admin-card { margin:0 0 20px; padding:21px; border:1px solid #e5e9ef; border-radius:10px; background:#fff; box-shadow:0 2px 8px rgba(16,24,40,.025); }
+    .admin-card h2 { margin:0 0 17px; font-size:15px; }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .field { display:flex; flex-direction:column; gap:7px; margin-bottom:14px; }
+    .field label { color:#475467; font-size:12px; font-weight:600; }
+    .field input,.field textarea { width:100%; border:1px solid #d8dee7; border-radius:7px; padding:10px 11px; color:#182230; background:#fff; font-size:13px; }
+    .field input:focus,.field textarea:focus { outline:0; border-color:var(--blue); box-shadow:0 0 0 3px rgba(19,99,168,.11); }
+    .field textarea { min-height:205px; resize:vertical; line-height:1.65; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .field textarea.proposal-input { min-height:132px; font-family:inherit; }
+    .field-hint { color:#929baa; font-size:11px; line-height:1.5; }
+    .form-actions { display:flex; flex-wrap:wrap; gap:9px; }
+    .preview-box { margin-top:15px; padding:14px; border:1px solid #dce8f1; border-radius:8px; background:#f7fafc; }
+    .preview-box h3 { margin:0 0 9px; font-size:13px; }
+    .preview-box p,.preview-box li { color:#667085; font-size:12px; line-height:1.65; }
+    .seeded-list { display:flex; flex-direction:column; }
+    .seeded-item { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-top:1px solid #edf0f4; }
+    .seeded-item:first-child { border-top:0; }
+    .seeded-item strong { display:block; font-size:13px; }
+    .seeded-item small { display:block; margin-top:4px; color:#8993a1; font-size:11px; }
+    .delete-btn { border:1px solid #f1d4d4; border-radius:7px; padding:7px 10px; color:#b42318; background:#fff; font-size:11px; }
+    .delete-btn:hover { background:#fff3f2; }
+    .login-card { width:min(390px,100%); margin:70px auto; padding:28px; border:1px solid #e5e9ef; border-radius:12px; background:#fff; box-shadow:0 8px 32px rgba(16,24,40,.07); }
+    .login-card h1 { margin:0 0 8px; font-size:23px; }
+    .login-card p { margin:0 0 22px; color:#788394; font-size:13px; line-height:1.6; }
+    .toast { position:fixed; right:22px; bottom:22px; z-index:10; max-width:min(460px,calc(100vw - 44px)); padding:13px 16px; border-radius:10px; color:#fff; background:#1f2937; box-shadow:0 10px 30px rgba(16,24,40,.22); font-size:13px; animation:toastIn .2s ease-out; }
+    .toast.error { background:#9f2d27; }
+    @keyframes toastIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    @media (max-width:1000px) {
+      .article-layout { grid-template-columns:185px minmax(0,1fr); }
+      .info-card { position:static; grid-column:2; }
+      .wiki-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+    @media (max-width:680px) {
+      .site-header { height:60px; padding:0 16px; }
+      .brand img { width:65px; }
+      .header-actions { gap:2px; }
+      .header-link { padding:8px; font-size:12px; }
+      .page-shell { width:min(100% - 32px,500px); }
+      .hero { height:188px; }
+      .hero-logo { height:83px; }
+      .search-area { width:calc(100% - 24px); }
+      .search-input { padding:0 14px; font-size:13px; }
+      .search-form .btn-sky { min-width:82px; padding:0 13px; font-size:13px; }
+      .hero-actions button { min-width:112px; font-size:12px; }
+      .section-heading { align-items:flex-start; flex-direction:column; margin-top:30px; }
+      .wiki-grid { grid-template-columns:1fr; gap:12px; }
+      .wiki-card { min-height:155px; }
+      .article-title-row { flex-direction:column; }
+      .article-title-row h1 { font-size:28px; }
+      .article-layout { grid-template-columns:1fr; gap:14px; }
+      .side-card,.info-card { position:static; grid-column:auto; }
+      .side-card { order:0; }
+      .blocks { order:1; }
+      .info-card { order:2; }
+      .toc { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .admin-shell { grid-template-columns:1fr; }
+      .admin-sidebar { display:flex; align-items:center; gap:5px; padding:8px 12px; overflow:auto; }
+      .admin-brand { padding:0 7px; }
+      .admin-brand img { width:68px; height:34px; }
+      .admin-sidebar-label { display:none; }
+      .admin-nav { width:auto; flex:none; padding:9px 10px; font-size:11px; }
+      .admin-main { padding:25px 16px; }
+      .form-grid { grid-template-columns:1fr; gap:0; }
+      .seeded-item { align-items:flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#" data-action="home" aria-label="Sky"><img id="headerLogo" alt=""></a>
+    <nav class="header-actions" aria-label="Main navigation">
+      <button id="langToggle" class="lang-toggle" type="button"></button>
+      <button class="header-link" type="button" data-action="profile" id="profileNav"></button>
+      <button class="btn-sky" type="button" data-action="admin" id="adminNav"></button>
+    </nav>
+  </header>
+  <main id="app"></main>
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+  <script>
+    (() => {
+      "use strict";
+
+      const DB_KEY = "sky_wiki_db";
+      const LANG_KEY = "sky_lang";
+      const USERS_KEY = "sky_users";
+      const QUEUE_KEY = "sky_edit_queue";
+      const ADMIN_AUTH_KEY = "sky_admin_auth";
+      const ADMIN_ACCOUNT = "skywalker";
+      const i18n = {
+        zh: {
+          placeholder:"搜索或创建规范...",explore:"Sky 探索",lucky:"手气不错",seed:"一键播种",edit:"修改",profile:"我的主页",admin:"播种后台",langLabel:"EN",
+          brandAlt:"Sky 标志",navLabel:"主导航",langSwitch:"切换到英文",documentTitle:"Sky — 知识在共识中进化",tagline:"极简去中心化共识百科 · 知识在复现中进化",featured:"探索知识",articleCount:"篇规范已在本地播种",
+          emptyTitle:"还没有找到规范",emptyText:"试试其他关键词，或前往播种后台创建第一篇。",noArticles:"还没有内容",official:"Sky Official",by:"作者",
+          home:"首页",toc:"目录",infobox:"信息卡",noInfo:"暂无补充信息",editArticle:"提交修改建议",proposalTitle:"提交修改建议",
+          proposalHint:"你的建议会保存到本机的替代队列，不会覆盖主版本。",proposalLabel:"建议内容",submitProposal:"提交建议",cancel:"取消",
+          proposalSaved:"修改建议已保存到本机队列。",voteOk:"有帮助",voteFail:"需改进",copy:"复制",copied:"已复制区块内容。",
+          profileTitle:"我的主页",profileBio:"我的 Sky 知识链接",myArticles:"参与的规范",allArticles:"返回探索",profileEmpty:"暂无参与的规范",
+          console:"播种控制台",consoleLead:"管理本地知识库。数据只保存在此浏览器的 localStorage 中。",adminSignIn:"管理员登录",adminSignInHint:"登录后即可发布和管理本地规范。",
+          adminSetupTitle:"设置本机管理员密码",adminSetupHint:"首次在此浏览器设置。仅用于本机控制台，不是网站访问保护；密码哈希只保存在本浏览器中。",localAdminOnly:"本地管理员登录只控制当前浏览器中的 localStorage，不能保护共享网站数据。",
+          account:"账号",password:"密码",confirmPassword:"确认密码",signIn:"登录",setPassword:"设置密码",signOut:"退出登录",invalidLogin:"账号或密码不正确。",passwordMismatch:"两次输入的密码不一致。",passwordConfigured:"本机管理员密码已设置。",cryptoUnavailable:"此浏览器不支持安全密码哈希，无法设置本机密码。",loggedIn:"已登录管理控制台。",
+          seedEditor:"播种编辑器",seedEditorHint:"用 Raw Textarea 写入内容；发布会覆盖相同 ID 的现有规范。每个区块初始认可票为 10。",
+          idLabel:"ID（英文 slug）",titleLabel:"标题",rawLabel:"Raw Textarea",idPlaceholder:"例如：knowledge-consensus",titlePlaceholder:"输入中文标题",
+          rawHint:"支持 @info {JSON}、## 标题，以及 :::block quote / :::block code / ::: 结束区块。",
+          previewParse:"预览解析",seedPublish:"🚀 播种发布",exportJson:"导出 JSON",importJson:"导入 JSON",
+          seededItems:"已播种的规范",noneSeeded:"还没有播种任何规范。",delete:"删除",confirmDelete:"确定删除这篇规范吗？此操作无法撤销。",
+          previewHeading:"解析预览",previewBlocks:"个内容区块",previewInfo:"项信息",parseError:"解析失败：",invalidId:"ID 只能由小写英文字母、数字和连字符组成。",
+          missingFields:"请填写 ID、标题和原文。",published:"规范已发布到本地知识库。",deleted:"规范已删除。",importSuccess:"JSON 导入成功。",
+          exportReady:"JSON 已导出。",invalidJson:"JSON 格式无效：",invalidDb:"导入文件必须是规范数组。",storageError:"本地存储失败：",
+          profileMenu:"个人主页",guest:"访客",seededBy:"由 Sky 本地播种",signedInAs:"已登录",
+          navDashboard:"控制台",navLibrary:"知识库",navNew:"新建规范",backHome:"回到首页",notFound:"没有找到这篇规范。",
+          mainVersion:"主版本",views:"规范 ID",proposalLogin:"访客",toastCopyError:"复制失败，请检查浏览器权限。",
+          searchResults:"搜索结果",editProposal:"修改建议",emptyProposal:"建议内容不能为空。",queueLabel:"本地替代队列",block:"区块",adminAlt:"Sky 控制台标志"
+        },
+        en: {
+          placeholder:"Search or create spec...",explore:"Sky Search",lucky:"I'm Feeling Lucky",seed:"Publish",edit:"Edit",profile:"My Page",admin:"Console",langLabel:"中",
+          brandAlt:"Sky logo",navLabel:"Main navigation",langSwitch:"Switch to Chinese",documentTitle:"Sky — Knowledge evolves in consensus",tagline:"A minimalist consensus wiki · Knowledge evolves in replication",featured:"Explore knowledge",articleCount:"specs seeded locally",
+          emptyTitle:"No specs found",emptyText:"Try another search, or create the first article in the console.",noArticles:"No content yet",official:"Sky Official",by:"By",
+          home:"Home",toc:"Contents",infobox:"Infobox",noInfo:"No additional information",editArticle:"Suggest an edit",proposalTitle:"Suggest an edit",
+          proposalHint:"Your suggestion is saved to a local alternative queue and will not overwrite the main version.",proposalLabel:"Suggested content",submitProposal:"Submit suggestion",cancel:"Cancel",
+          proposalSaved:"Your edit suggestion was saved locally.",voteOk:"Helpful",voteFail:"Needs work",copy:"Copy",copied:"Block content copied.",
+          profileTitle:"My page",profileBio:"My Sky knowledge links",myArticles:"Contributed specs",allArticles:"Back to explore",profileEmpty:"No contributed specs yet.",
+          console:"Seed Console",consoleLead:"Manage your local knowledge base. Data stays in this browser's localStorage.",adminSignIn:"Admin sign in",adminSignInHint:"Sign in to publish and manage local specs.",
+          adminSetupTitle:"Set a local admin password",adminSetupHint:"Set this once in this browser. This only gates the local console; it does not protect the website. Only a password hash is stored in this browser.",localAdminOnly:"Local admin sign-in only gates this browser's localStorage; it cannot protect shared website data.",
+          account:"Account",password:"Password",confirmPassword:"Confirm password",signIn:"Sign in",setPassword:"Set password",signOut:"Sign out",invalidLogin:"Incorrect account or password.",passwordMismatch:"The passwords do not match.",passwordConfigured:"Local admin password set.",cryptoUnavailable:"Secure password hashing is unavailable in this browser; a local password cannot be set.",loggedIn:"Signed in to the console.",
+          seedEditor:"Seed editor",seedEditorHint:"Write content in the raw textarea. Publishing overwrites any spec with the same ID. Each block starts with 10 helpful votes.",
+          idLabel:"ID (English slug)",titleLabel:"Title",rawLabel:"Raw textarea",idPlaceholder:"e.g. knowledge-consensus",titlePlaceholder:"Enter a title",
+          rawHint:"Supports @info {JSON}, ## headings, and :::block quote / :::block code / ::: to close a block.",
+          previewParse:"Preview parse",seedPublish:"🚀 Publish seed",exportJson:"Export JSON",importJson:"Import JSON",
+          seededItems:"Seeded specs",noneSeeded:"No specs seeded yet.",delete:"Delete",confirmDelete:"Delete this spec? This cannot be undone.",
+          previewHeading:"Parse preview",previewBlocks:"content blocks",previewInfo:"info fields",parseError:"Parse failed: ",invalidId:"ID must use lowercase English letters, numbers, and hyphens.",
+          missingFields:"Enter an ID, title, and source text.",published:"Spec published to the local knowledge base.",deleted:"Spec deleted.",importSuccess:"JSON imported successfully.",
+          exportReady:"JSON exported.",invalidJson:"Invalid JSON: ",invalidDb:"The import file must be an array of specs.",storageError:"Local storage failed: ",
+          profileMenu:"My page",guest:"Guest",seededBy:"Seeded locally by Sky",signedInAs:"Signed in",
+          navDashboard:"Dashboard",navLibrary:"Library",navNew:"New spec",backHome:"Back to home",notFound:"This spec could not be found.",
+          mainVersion:"Main version",views:"Spec ID",proposalLogin:"Guest",toastCopyError:"Copy failed. Check browser permissions.",
+          searchResults:"Search results",editProposal:"Edit suggestion",emptyProposal:"Suggestion content cannot be empty.",queueLabel:"Local alternative queue",block:"Block",adminAlt:"Sky console logo"
+        }
+      };
+      const t = key => (i18n[state.lang] && i18n[state.lang][key]) || i18n.en[key] || key;
+
+      function readArray(key) {
+        try {
+          const value = JSON.parse(localStorage.getItem(key) || "[]");
+          return Array.isArray(value) ? value : [];
+        } catch (error) {
+          console.error("Unable to read local data", key, error);
+          return [];
+        }
+        function readAdminAuth() {
+          try {
+            const stored = localStorage.getItem(ADMIN_AUTH_KEY);
+            if (!stored) return null;
+            const auth = JSON.parse(stored);
+            return auth && typeof auth.salt === "string" && typeof auth.hash === "string" ? auth : null;
+          } catch (error) {
+            console.error("Unable to read local admin credentials",error);
+            return null;
+          }
+        }
+        async function hashPassword(password,salt) {
+          if (!globalThis.crypto?.subtle || !globalThis.crypto?.getRandomValues) throw new Error(t("cryptoUnavailable"));
+          const bytes = await crypto.subtle.digest("SHA-256",new TextEncoder().encode(`${salt}:${password}`));
+          return Array.from(new Uint8Array(bytes),byte => byte.toString(16).padStart(2,"0")).join("");
+        }
+      }
+      function writeJson(key, value) {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+          return true;
+        } catch (error) {
+          showToast(t("storageError") + error.message, true);
+          return false;
+        }
+      }
+      function normalizeWiki(item) {
+        if (!item || typeof item !== "object" || typeof item.id !== "string" || typeof item.title !== "string") return null;
+        const blocks = Array.isArray(item.blocks) ? item.blocks.map(block => ({
+          type:typeof block.type === "string" ? block.type : "text",
+          content:typeof block.content === "string" ? block.content : "",
+          author:typeof block.author === "string" ? block.author : "Sky Official",
+          avatar:typeof block.avatar === "string" ? block.avatar : "S",
+          votes:{
+            ok:Number(block.votes && block.votes.ok) || 0,
+            fail:Number(block.votes && block.votes.fail) || 0,
+            copy:Number(block.votes && block.votes.copy) || 0
+          }
+        })) : [];
+        return {
+          ...item,
+          id:item.id,
+          title:item.title,
+          blocks,
+          info:item.info && typeof item.info === "object" && !Array.isArray(item.info) ? item.info : {},
+          author:typeof item.author === "string" ? item.author : "Sky Official",
+          avatar:typeof item.avatar === "string" ? item.avatar : "S",
+          mainVersion:item.mainVersion && typeof item.mainVersion === "object" ? {
+            author:typeof item.mainVersion.author === "string" ? item.mainVersion.author : "Sky Official",
+            votes:{
+              ok:Number(item.mainVersion.votes && item.mainVersion.votes.ok) || 0,
+              fail:Number(item.mainVersion.votes && item.mainVersion.votes.fail) || 0,
+              copy:Number(item.mainVersion.votes && item.mainVersion.votes.copy) || 0
+            }
+          } : {author:"Sky Official",votes:{ok:10,fail:0,copy:0}}
+        };
+      }
+      const initialDb = readArray(DB_KEY).map(normalizeWiki).filter(Boolean);
+      const state = {
+        db:initialDb,
+        lang:(() => { try { return localStorage.getItem(LANG_KEY) === "en" ? "en" : "zh"; } catch (_) { return "zh"; } })(),
+        page:"home",
+        query:"",
+        articleId:"",
+        user:null,
+        adminLoggedIn:false,
+        preview:null,
+        proposalId:"",
+        proposalDraft:"",
+        seedDraft:null,
+        flashAuthor:"",
+        flashBlock:-1,
+        toastTimer:0
+      };
+      window.skyState = state;
+      const app = document.getElementById("app");
+      const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+      })[char]);
+      const avatarLetter = name => Array.from(String(name || "S"))[0] || "S";
+      const avatarHtml = (name, size="") => `<span class="avatar ${size}" aria-hidden="true">${esc(avatarLetter(name))}</span>`;
+      const authorOf = article => article.author || (article.mainVersion && article.mainVersion.author) || t("official");
+
+      function storeDb(nextDb=state.db) {
+        if (writeJson(DB_KEY,nextDb)) {
+          state.db = nextDb;
+          return true;
+        }
+        return false;
+      }
+      function showToast(message,isError=false) {
+        const node = document.getElementById("toast");
+        node.textContent = message;
+        node.className = "toast" + (isError ? " error" : "");
+        node.hidden = false;
+        clearTimeout(state.toastTimer);
+        state.toastTimer = setTimeout(() => { node.hidden = true; },3600);
+      }
+      function logoSvg(kind) {
+        const isBase = kind === "base";
+        const s = isBase ? "#111827" : "#2EA6B0";
+        const k = isBase ? "#0EA5E9" : (kind === "dark" ? "#FFFFFF" : "#111827");
+        const y = isBase || kind === "light" ? "#111827" : "#FFFFFF";
+        return `<svg xmlns="http://www.w3.org/2000/svg" width="560" height="220" viewBox="0 0 560 220"><g transform="translate(22 14) skewX(-8)"><text x="12" y="165" font-family="Baskerville,Georgia,'Times New Roman',serif" font-size="184" font-style="italic" font-weight="500" fill="${s}">S</text><text x="137" y="165" font-family="Baskerville,Georgia,'Times New Roman',serif" font-size="184" font-style="italic" font-weight="500" fill="${k}">k</text><text x="257" y="165" font-family="Baskerville,Georgia,'Times New Roman',serif" font-size="184" font-style="italic" font-weight="500" fill="${y}">y</text></g></svg>`;
+      }
+      function svgData(svg) { return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg); }
+      function pngFromSvg(svg) {
+        return new Promise(resolve => {
+          const image = new Image();
+          image.onload = () => {
+            try {
+              const canvas = document.createElement("canvas");
+              canvas.width = 840;
+              canvas.height = 330;
+              canvas.getContext("2d").drawImage(image,0,0,canvas.width,canvas.height);
+              resolve(canvas.toDataURL("image/png"));
+            } catch (_) { resolve(svgData(svg)); }
+          };
+          image.onerror = () => resolve(svgData(svg));
+          image.src = svgData(svg);
+        });
+      }
+      let logoSources = {light:svgData(logoSvg("light")),dark:svgData(logoSvg("dark"))};
+      Promise.all([pngFromSvg(logoSvg("light")),pngFromSvg(logoSvg("dark"))]).then(([light,dark]) => {
+        logoSources = {light,dark};
+        updateLogos();
+      });
+      function updateLogos() {
+        const header = document.getElementById("headerLogo");
+        if (header) { header.src = logoSources.light; header.alt = t("brandAlt"); }
+        const hero = document.getElementById("heroLogo");
+        if (hero) hero.src = logoSources.light;
+        const adminLogo = document.querySelector(".admin-brand img");
+        if (adminLogo) adminLogo.src = logoSources.dark;
+      }
+      function logoImg(kind,alt,className) {
+        return `<img class="${className}" src="${logoSources[kind]}" alt="${esc(alt)}">`;
+      }
+      function displayBlocks(blocks) {
+        if (!blocks.length) return `<div class="empty-state"><strong>${t("noArticles")}</strong></div>`;
+        return blocks.map((block,index) => {
+          const content = esc(block.content).replace(/\n/g,"<br>");
+          const type = block.type.toLowerCase();
+          let body;
+          if (type === "heading") body = `<h2 id="block-${index}">${content}</h2>`;
+          else if (type === "quote") body = `<blockquote id="block-${index}">${content}</blockquote>`;
+          else if (type === "code") body = `<pre id="block-${index}">${content}</pre>`;
+          else if (type === "list") body = `<div class="block-content" id="block-${index}">${content}</div>`;
+          else body = `<p id="block-${index}">${content}</p>`;
+          const votes = block.votes || {ok:0,fail:0,copy:0};
+          const contributors = state.flashBlock === index
+            ? `<span class="contributor-stack" title="${esc(state.flashAuthor || t("proposalLogin"))}">${avatarHtml(state.flashAuthor || "S")}</span>`
+            : "";
+          return `<section class="article-block" data-block-index="${index}">${body}<div class="block-footer"><span class="block-author">${avatarHtml(block.author || t("official"))}<span>${esc(block.author || t("official"))}</span></span><span class="block-actions">${contributors}<button class="vote-btn" type="button" data-action="vote" data-index="${index}" data-kind="ok" aria-label="${t("voteOk")}">✓ ${votes.ok || 0}</button><button class="vote-btn" type="button" data-action="vote" data-index="${index}" data-kind="fail" aria-label="${t("voteFail")}">△ ${votes.fail || 0}</button><button class="vote-btn" type="button" data-action="copy" data-index="${index}" aria-label="${t("copy")}">↗ ${votes.copy || 0}</button></span></div></section>`;
+        }).join("");
+      }
+      function renderHome() {
+        const docs = state.db.filter(article => {
+          if (!state.query) return true;
+          const haystack = [article.id,article.title,article.author,...article.blocks.map(block => block.content)].join(" ").toLowerCase();
+          return haystack.includes(state.query.toLowerCase());
+        });
+        const list = docs.length ? docs.map(article => {
+          const summary = (article.blocks.find(block => block.type !== "heading") || article.blocks[0] || {}).content || "";
+          const votes = article.mainVersion.votes.ok || 0;
+          return `<article class="wiki-card" data-action="open-article" data-id="${esc(article.id)}" tabindex="0" role="link"><div class="card-topline"><span class="card-tag">${esc(article.id)}</span><span class="card-votes">✓ ${votes}</span></div><h3>${esc(article.title)}</h3><p>${esc(summary)}</p><span class="card-author">${avatarHtml(authorOf(article))}<span>${esc(authorOf(article))}</span></span></article>`;
+        }).join("") : `<div class="empty-state"><strong>${t("emptyTitle")}</strong>${t("emptyText")}</div>`;
+        const heading = state.query ? t("searchResults") : t("featured");
+        return `<section class="hero"><img id="heroLogo" class="hero-logo" src="${logoSources.light}" alt="${t("brandAlt")}"><p class="hero-subtitle">${t("tagline")}</p></section><section class="search-area"><form class="search-form" id="searchForm"><label class="sr-only" for="searchInput">${t("placeholder")}</label><input id="searchInput" class="search-input" name="query" value="${esc(state.query)}" placeholder="${t("placeholder")}" autocomplete="off"><button class="btn-sky" type="submit">${t("explore")}</button></form><div class="hero-actions"><button class="btn-quiet" type="button" data-action="lucky">${t("lucky")}</button><button class="btn-quiet" type="button" data-action="admin">${t("seed")}</button></div></section><section class="page-shell"><div class="section-heading"><h1>${heading}</h1><p>${state.db.length} ${t("articleCount")}</p></div><div class="wiki-grid">${list}</div><footer class="site-footer">Sky · ${t("seededBy")}</footer></section>`;
+      }
+      function renderArticle() {
+        const article = state.db.find(item => item.id === state.articleId);
+        if (!article) return `<section class="page-shell"><div class="empty-state" style="margin:60px 0"><strong>${t("notFound")}</strong><button class="btn-sky" type="button" data-action="home">${t("backHome")}</button></div></section>`;
+        const toc = article.blocks.map((block,index) => {
+          const label = block.type === "heading" ? block.content : `${t("block")} ${index + 1}`;
+          return `<a href="#block-${index}">${esc(label)}</a>`;
+        }).join("");
+        const info = Object.keys(article.info).length
+          ? Object.entries(article.info).map(([key,value]) => `<div class="info-row"><span>${esc(key)}</span><strong>${esc(typeof value === "object" ? JSON.stringify(value) : value)}</strong></div>`).join("")
+          : `<p class="info-empty">${t("noInfo")}</p>`;
+        const proposed = state.proposalId === article.id;
+        const proposalContent = state.proposalDraft || article.blocks.map(block => block.content).join("\n\n");
+        return `<section class="page-shell"><div class="article-head"><div class="breadcrumbs"><button type="button" data-action="home">${t("home")}</button> / ${esc(article.id)}</div><div class="article-title-row"><div><h1>${esc(article.title)}</h1><div class="article-meta">${avatarHtml(authorOf(article))}<span>${t("by")} ${esc(authorOf(article))}</span><span>·</span><span>${t("views")}: ${esc(article.id)}</span></div></div><button class="btn-quiet" type="button" data-action="edit">${t("editArticle")}</button></div></div>${state.flashBlock >= 0 ? `<div class="article-notice">${t("proposalSaved")}</div>` : ""}<div class="article-layout"><aside class="side-card"><h2>${t("toc")}</h2><nav class="toc">${toc || `<span class="info-empty">${t("noArticles")}</span>`}</nav></aside><div><div class="blocks">${displayBlocks(article.blocks)}</div>${proposed ? `<form class="proposal-panel" id="proposalForm"><h2>${t("proposalTitle")}</h2><p>${t("proposalHint")}</p><label class="field"><span>${t("proposalLabel")}</span><textarea name="proposal" class="proposal-input" required>${esc(proposalContent)}</textarea></label><div class="form-actions"><button class="btn-sky" type="submit">${t("submitProposal")}</button><button class="btn-quiet" type="button" data-action="cancel-proposal">${t("cancel")}</button></div></form>` : ""}</div><aside class="info-card"><h2>${t("infobox")}</h2>${info}<div class="info-row"><span>${t("mainVersion")}</span><strong>${esc(article.mainVersion.author)}</strong></div></aside></div></section>`;
+      }
+      function renderProfile() {
+        const userName = state.user || t("guest");
+        const mine = state.db.filter(article => article.author === userName || article.blocks.some(block => block.author === userName));
+        const links = mine.map(article => `<button type="button" data-action="open-article" data-id="${esc(article.id)}">${esc(article.title)} · ${esc(article.id)}</button>`).join("");
+        return `<section class="page-shell"><div class="profile-wrap">${avatarHtml(userName,"large")}<h1>${esc(userName)}</h1><p class="profile-bio">${t("profileBio")}</p><div class="profile-links">${links || `<div class="empty-state"><strong>${t("profileEmpty")}</strong></div>`}<button type="button" data-action="home">${t("allArticles")}</button></div><div class="profile-caption">Sky · ${t("myArticles")}</div></div></section>`;
+      }
+      function renderAdmin() {
+        if (!state.adminLoggedIn) {
+          const configured = Boolean(readAdminAuth());
+          return `<section class="page-shell"><form class="login-card" id="loginForm"><h1>${configured ? t("adminSignIn") : t("adminSetupTitle")}</h1><p>${configured ? t("adminSignInHint") : t("adminSetupHint")}<br><br>${t("localAdminOnly")}</p><label class="field"><span>${t("account")}</span><input name="account" value="${ADMIN_ACCOUNT}" autocomplete="username" readonly required></label><label class="field"><span>${t("password")}</span><input name="password" type="password" minlength="8" autocomplete="${configured ? "current-password" : "new-password"}" required></label>${configured ? "" : `<label class="field"><span>${t("confirmPassword")}</span><input name="confirmPassword" type="password" minlength="8" autocomplete="new-password" required></label>`}<button class="btn-sky" type="submit">${configured ? t("signIn") : t("setPassword")}</button></form></section>`;
+        }
+        const rows = state.db.length ? state.db.map(article => `<div class="seeded-item"><div><strong>${esc(article.title)}</strong><small>${esc(article.id)} · ${article.blocks.length} ${t("previewBlocks")}</small></div><button class="delete-btn" type="button" data-action="delete" data-id="${esc(article.id)}">${t("delete")}</button></div>`).join("") : `<p class="info-empty">${t("noneSeeded")}</p>`;
+        const preview = state.preview ? `<div class="preview-box"><h3>${t("previewHeading")} · ${esc(state.preview.title || "")}</h3><p>${state.preview.blocks.length} ${t("previewBlocks")} · ${Object.keys(state.preview.info).length} ${t("previewInfo")}</p><ul>${state.preview.blocks.map(block => `<li><strong>${esc(block.type)}</strong> — ${esc(block.content.slice(0,160))}</li>`).join("")}</ul></div>` : "";
+        const draft = state.seedDraft || {id:"",title:"",raw:""};
+        return `<div class="admin-shell"><aside class="admin-sidebar"><div class="admin-brand">${logoImg("dark",t("adminAlt"),"")}</div><div class="admin-sidebar-label">${t("console")}</div><button class="admin-nav active" type="button" data-action="admin">◧ ${t("navDashboard")}</button><button class="admin-nav" type="button" data-action="library">▤ ${t("navLibrary")}</button><button class="admin-nav" type="button" data-action="new-seed">＋ ${t("navNew")}</button><div class="admin-sidebar-label">${t("signedInAs")}</div><button class="admin-nav" type="button" data-action="logout">↪ ${t("signOut")}</button></aside><section class="admin-main"><div class="admin-main-inner"><h1>${t("console")}</h1><p class="admin-lead">${t("consoleLead")}</p><form class="admin-card" id="seedForm"><h2>${t("seedEditor")}</h2><p class="admin-lead">${t("seedEditorHint")}</p><div class="form-grid"><label class="field"><span>${t("idLabel")}</span><input name="id" value="${esc(draft.id)}" placeholder="${t("idPlaceholder")}" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required></label><label class="field"><span>${t("titleLabel")}</span><input name="title" value="${esc(draft.title)}" placeholder="${t("titlePlaceholder")}" required></label></div><label class="field"><span>${t("rawLabel")}</span><textarea name="raw" required>${esc(draft.raw)}</textarea><span class="field-hint">${t("rawHint")}</span></label><div class="form-actions"><button class="btn-quiet" type="button" data-action="preview-parse">${t("previewParse")}</button><button class="btn-sky" type="submit">${t("seedPublish")}</button><button class="btn-quiet" type="button" data-action="export">${t("exportJson")}</button><button class="btn-quiet" type="button" data-action="import">${t("importJson")}</button><input id="importFile" class="sr-only" type="file" accept=".json,application/json" aria-label="${t("importJson")}"></div>${preview}</form><section class="admin-card"><h2>${t("seededItems")} <span class="card-votes">(${state.db.length})</span></h2><div class="seeded-list">${rows}</div></section></div></section></div>`;
+      }
+      function render() {
+        updateLogos();
+        document.getElementById("langToggle").textContent = t("langLabel");
+        document.getElementById("langToggle").setAttribute("aria-label",t("langSwitch"));
+        document.getElementById("profileNav").textContent = t("profile");
+        document.getElementById("adminNav").textContent = state.adminLoggedIn ? t("console") : t("admin");
+        document.querySelector(".brand")?.setAttribute("aria-label",t("brandAlt"));
+        document.querySelector(".header-actions")?.setAttribute("aria-label",t("navLabel"));
+        document.title = t("documentTitle");
+        document.documentElement.lang = state.lang;
+        app.innerHTML = state.page === "article" ? renderArticle()
+          : state.page === "profile" ? renderProfile()
+          : state.page === "admin" ? renderAdmin()
+          : renderHome();
+        const heroLogo = document.getElementById("heroLogo");
+        if (heroLogo) heroLogo.src = logoSources.light;
+      }
+      function parseWiki(raw) {
+        const lines = String(raw).replace(/\r\n?/g,"\n").split("\n");
+        const blocks = [];
+        let info = {};
+        let paragraph = [];
+        let blockType = "";
+        let blockLines = [];
+        const flushParagraph = () => {
+          const content = paragraph.join("\n").trim();
+          if (content) blocks.push({type:"text",content});
+          paragraph = [];
+        };
+        const flushBlock = () => {
+          const content = blockLines.join("\n").trim();
+          if (content) blocks.push({type:blockType || "text",content});
+          blockLines = [];
+          blockType = "";
+        };
+        for (let i=0;i<lines.length;i++) {
+          const line = lines[i];
+          const trimmed = line.trim();
+          if (blockType) {
+            if (/^:::\s*$/.test(trimmed)) flushBlock();
+            else blockLines.push(line);
+            continue;
+          }
+          if (!trimmed) { flushParagraph(); continue; }
+          if (trimmed.startsWith("@info")) {
+            flushParagraph();
+            const initial = trimmed.slice(5).trim();
+            const jsonLines = initial ? [initial] : [];
+            let jsonText = jsonLines.join("\n");
+            let depth = 0;
+            let opened = false;
+            let inString = false;
+            let escaped = false;
+            const scanJson = text => {
+              for (const char of text) {
+                if (inString) {
+                  if (escaped) escaped = false;
+                  else if (char === "\\") escaped = true;
+                  else if (char === '"') inString = false;
+                } else if (char === '"') inString = true;
+                else if (char === "{") { depth++; opened = true; }
+                else if (char === "}") depth--;
+              }
+            };
+            scanJson(jsonText);
+            while (!opened || depth > 0) {
+              if (i + 1 >= lines.length) break;
+              const next = lines[++i];
+              jsonLines.push(next);
+              scanJson(next);
+            }
+            jsonText = jsonLines.join("\n").trim();
+            try {
+              const parsed = JSON.parse(jsonText);
+              if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("@info must contain a JSON object");
+              info = parsed;
+            } catch (error) {
+              throw new Error(`@info: ${error.message}`);
+            }
+            continue;
+          }
+          const blockStart = trimmed.match(/^:::block\s+([a-zA-Z0-9_-]+)\s*$/);
+          if (blockStart) {
+            flushParagraph();
+            blockType = blockStart[1].toLowerCase();
+            blockLines = [];
+            continue;
+          }
+          if (trimmed.startsWith("## ")) {
+            flushParagraph();
+            blocks.push({type:"heading",content:trimmed.slice(3).trim()});
+            continue;
+          }
+          paragraph.push(line);
+        }
+        flushParagraph();
+        if (blockType) flushBlock();
+        return {blocks,info};
+      }
+      function formValue(form,name) { return new FormData(form).get(name)?.toString() || ""; }
+      function serializeArticle(article) {
+        const info = Object.keys(article.info || {}).length ? `@info ${JSON.stringify(article.info,null,2)}\n\n` : "";
+        return info + article.blocks.map(block => block.type === "heading"
+          ? `## ${block.content}`
+          : block.type === "text"
+            ? block.content
+            : `:::block ${block.type}\n${block.content}\n:::`).join("\n\n");
+      }
+      function publishSeed(form) {
+        const id = formValue(form,"id").trim();
+        const title = formValue(form,"title").trim();
+        const raw = formValue(form,"raw");
+        state.seedDraft = {id,title,raw};
+        if (!id || !title || !raw.trim()) { showToast(t("missingFields"),true); return; }
+        if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) { showToast(t("invalidId"),true); return; }
+        try {
+          const parsed = parseWiki(raw);
+          const now = new Date().toISOString();
+          const article = {
+            id,title,blocks:parsed.blocks.map(block => ({...block,author:state.user || ADMIN_ACCOUNT,avatar:avatarLetter(state.user || ADMIN_ACCOUNT),votes:{ok:10,fail:0,copy:0}})),
+            info:parsed.info,author:state.user || ADMIN_ACCOUNT,avatar:avatarLetter(state.user || ADMIN_ACCOUNT),
+            mainVersion:{author:"Sky Official",votes:{ok:10,fail:0,copy:0}},updatedAt:now
+          };
+          const nextDb = state.db.slice();
+          const index = nextDb.findIndex(item => item.id === id);
+          if (index === -1) nextDb.unshift(article); else nextDb[index] = article;
+          if (!storeDb(nextDb)) return;
+          state.preview = null;
+          state.seedDraft = null;
+          state.query = "";
+          render();
+          showToast(t("published"));
+        } catch (error) { showToast(t("parseError") + error.message,true); }
+      }
+      function exportDb() {
+        const blob = new Blob([JSON.stringify(state.db,null,2)],{type:"application/json"});
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "sky_wiki_db.json";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(link.href);
+        showToast(t("exportReady"));
+      }
+      function importDb(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const parsed = JSON.parse(String(reader.result));
+            if (!Array.isArray(parsed)) throw new Error(t("invalidDb"));
+            const clean = parsed.map(normalizeWiki);
+            if (clean.some(item => !item)) throw new Error(t("invalidDb"));
+            if (!storeDb(clean)) return;
+            render();
+            showToast(t("importSuccess"));
+          } catch (error) { showToast(t("invalidJson") + error.message,true); }
+        };
+        reader.onerror = () => showToast(t("invalidJson") + (reader.error?.message || "File read error"),true);
+        reader.readAsText(file);
+      }
+      function setPage(page) {
+        state.page = page;
+        state.preview = null;
+        state.proposalId = "";
+        state.proposalDraft = "";
+        state.flashBlock = -1;
+        render();
+        window.scrollTo({top:0,behavior:"smooth"});
+      }
+      function openArticle(id) {
+        state.articleId = id;
+        setPage("article");
+      }
+      function vote(index,kind) {
+        const articleIndex = state.db.findIndex(item => item.id === state.articleId);
+        const article = state.db[articleIndex];
+        if (!article || !article.blocks[index]) return;
+        const nextDb = state.db.slice();
+        const nextArticle = {...article,blocks:article.blocks.slice()};
+        const block = {...article.blocks[index],votes:{...article.blocks[index].votes}};
+        block.votes[kind] = (Number(block.votes[kind]) || 0) + 1;
+        nextArticle.blocks[index] = block;
+        nextDb[articleIndex] = nextArticle;
+        if (storeDb(nextDb)) render();
+      }
+      async function copyBlock(index) {
+        const articleIndex = state.db.findIndex(item => item.id === state.articleId);
+        const article = state.db[articleIndex];
+        if (!article || !article.blocks[index]) return;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(article.blocks[index].content);
+          } else {
+            const field = document.createElement("textarea");
+            field.value = article.blocks[index].content;
+            field.setAttribute("readonly","");
+            field.style.position = "fixed";
+            field.style.opacity = "0";
+            document.body.appendChild(field);
+            field.select();
+            const copied = document.execCommand("copy");
+            field.remove();
+            if (!copied) throw new Error("Clipboard copy was denied");
+          }
+          const nextDb = state.db.slice();
+          const nextArticle = {...article,blocks:article.blocks.slice()};
+          const block = {...article.blocks[index],votes:{...article.blocks[index].votes}};
+          block.votes.copy = (Number(block.votes.copy) || 0) + 1;
+          nextArticle.blocks[index] = block;
+          nextDb[articleIndex] = nextArticle;
+          if (storeDb(nextDb)) { render(); showToast(t("copied")); }
+        } catch (_) {
+          showToast(t("toastCopyError"),true);
+        }
+      }
+      function saveProposal(form) {
+        const content = formValue(form,"proposal").trim();
+        if (!content) { showToast(t("emptyProposal"),true); return; }
+        const queue = readArray(QUEUE_KEY);
+        const article = state.db.find(item => item.id === state.articleId);
+        if (!article) return;
+        queue.push({
+          id:article.id,author:state.user || t("proposalLogin"),createdAt:new Date().toISOString(),
+          blocks:[{type:"text",content,author:state.user || t("proposalLogin"),avatar:avatarLetter(state.user || "G"),votes:{ok:0,fail:0,copy:0}}]
+        });
+        if (!writeJson(QUEUE_KEY,queue)) return;
+        state.proposalId = "";
+        state.proposalDraft = "";
+        state.flashBlock = 0;
+        state.flashAuthor = state.user || t("proposalLogin");
+        render();
+        showToast(t("proposalSaved"));
+        setTimeout(() => { state.flashBlock = -1; render(); },2600);
+      }
+      document.addEventListener("click",event => {
+        const button = event.target.closest("[data-action]");
+        if (!button) return;
+        const action = button.dataset.action;
+        if (action === "home") { state.query = ""; setPage("home"); }
+        else if (action === "admin") setPage("admin");
+        else if (action === "profile") setPage("profile");
+        else if (action === "open-article") openArticle(button.dataset.id);
+        else if (action === "lucky") {
+          const first = state.db.find(article => !state.query || `${article.id} ${article.title}`.toLowerCase().includes(state.query.toLowerCase()));
+          if (first) openArticle(first.id); else showToast(t("emptyTitle"));
+        }
+        else if (action === "edit") { state.proposalId = state.articleId; state.proposalDraft = ""; render(); document.querySelector(".proposal-input")?.focus(); }
+        else if (action === "cancel-proposal") { state.proposalId = ""; state.proposalDraft = ""; render(); }
+        else if (action === "vote") vote(Number(button.dataset.index),button.dataset.kind);
+        else if (action === "copy") copyBlock(Number(button.dataset.index));
+        else if (action === "preview-parse") {
+          const form = document.getElementById("seedForm");
+          state.seedDraft = {
+            id:formValue(form,"id"),
+            title:formValue(form,"title"),
+            raw:formValue(form,"raw")
+          };
+          try {
+            const parsed = parseWiki(state.seedDraft.raw);
+            state.preview = {...parsed,title:state.seedDraft.title};
+            render();
+          } catch (error) { showToast(t("parseError") + error.message,true); }
+        }
+        else if (action === "export") exportDb();
+        else if (action === "import") document.getElementById("importFile")?.click();
+        else if (action === "delete") {
+          if (!window.confirm(t("confirmDelete"))) return;
+          const nextDb = state.db.filter(article => article.id !== button.dataset.id);
+          if (storeDb(nextDb)) { render(); showToast(t("deleted")); }
+        }
+        else if (action === "logout") { state.adminLoggedIn = false; state.user = null; setPage("admin"); }
+        else if (action === "new-seed") { setPage("admin"); setTimeout(() => document.querySelector('[name="id"]')?.focus(),0); }
+        else if (action === "library") { state.query = ""; setPage("home"); }
+      });
+      document.addEventListener("submit",async event => {
+        const form = event.target;
+        if (form.id === "searchForm") {
+          event.preventDefault();
+          state.query = formValue(form,"query").trim();
+          const exact = state.db.find(article => article.id.toLowerCase() === state.query.toLowerCase());
+          if (exact) openArticle(exact.id); else { setPage("home"); }
+        } else if (form.id === "loginForm") {
+          event.preventDefault();
+          if (formValue(form,"account") !== ADMIN_ACCOUNT) { showToast(t("invalidLogin"),true); return; }
+          const password = formValue(form,"password");
+          if (!readAdminAuth()) {
+            if (password !== formValue(form,"confirmPassword")) { showToast(t("passwordMismatch"),true); return; }
+            try {
+              const salt = Array.from(crypto.getRandomValues(new Uint8Array(16)),byte => byte.toString(16).padStart(2,"0")).join("");
+              const hash = await hashPassword(password,salt);
+              if (!writeJson(ADMIN_AUTH_KEY,{salt,hash})) return;
+              showToast(t("passwordConfigured"));
+            } catch (error) { showToast(error.message || t("cryptoUnavailable"),true); return; }
+          } else {
+            try {
+              const auth = readAdminAuth();
+              if (!auth || await hashPassword(password,auth.salt) !== auth.hash) { showToast(t("invalidLogin"),true); return; }
+            } catch (error) { showToast(error.message || t("cryptoUnavailable"),true); return; }
+          }
+            const users = readArray(USERS_KEY);
+            if (!users.some(user => user && user.id === ADMIN_ACCOUNT)) users.push({id:ADMIN_ACCOUNT,name:"Skywalker",avatar:"S"});
+            if (!writeJson(USERS_KEY,users)) return;
+            state.adminLoggedIn = true;
+            state.user = ADMIN_ACCOUNT;
+            render();
+            showToast(t("loggedIn"));
+        } else if (form.id === "seedForm") {
+          event.preventDefault();
+          publishSeed(form);
+        } else if (form.id === "proposalForm") {
+          event.preventDefault();
+          saveProposal(form);
+        }
+      });
+      document.addEventListener("change",event => {
+        if (event.target.id === "importFile") importDb(event.target.files && event.target.files[0]);
+      });
+      document.addEventListener("input",event => {
+        if (event.target.closest("#seedForm")) {
+          const form = document.getElementById("seedForm");
+          state.seedDraft = {
+            id:formValue(form,"id"),
+            title:formValue(form,"title"),
+            raw:formValue(form,"raw")
+          };
+        } else if (event.target.closest("#proposalForm")) {
+          state.proposalDraft = formValue(document.getElementById("proposalForm"),"proposal");
+        }
+      });
+      document.getElementById("langToggle").addEventListener("click",() => {
+        state.lang = state.lang === "zh" ? "en" : "zh";
+        try { localStorage.setItem(LANG_KEY,state.lang); }
+        catch (error) { showToast(t("storageError") + error.message,true); }
+        render();
+      });
+      document.addEventListener("keydown",event => {
+        const card = event.target.closest && event.target.closest('.wiki-card[data-action="open-article"]');
+        if (card && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault();
+          openArticle(card.dataset.id);
+        }
+      });
+      render();
+    })();
+  </script>
+</body>
+</html>
