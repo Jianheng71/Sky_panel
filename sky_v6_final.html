@@ -212,7 +212,7 @@
       const SESSION_KEY = "sky_supabase_session";
       const i18n = {
         zh: {
-          placeholder:"搜索或创建规范...",explore:"Sky 探索",lucky:"手气不错",seed:"一键播种",edit:"修改",profile:"我的主页",admin:"后台入口",langLabel:"EN",
+          placeholder:"搜索或创建规范...",explore:"Sky 探索",seed:"一键播种",edit:"修改",profile:"我的主页",admin:"后台入口",langLabel:"EN",
           brandAlt:"Sky 标志",navLabel:"主导航",langSwitch:"切换到英文",documentTitle:"Sky — 知识在共识中进化",tagline:"极简去中心化共识百科 · 知识在复现中进化",featured:"探索知识",articleCount:"篇规范",
           emptyTitle:"还没有找到规范",emptyText:"试试其他关键词，或前往播种后台创建第一篇。",noArticles:"还没有内容",official:"Sky Official",by:"作者",
           home:"首页",toc:"目录",infobox:"信息卡",noInfo:"暂无补充信息",editArticle:"提交修改建议",proposalTitle:"提交修改建议",
@@ -237,7 +237,7 @@
           searchResults:"搜索结果",editProposal:"修改建议",emptyProposal:"建议内容不能为空。",queueLabel:"本地替代队列",block:"区块",adminAlt:"Sky 控制台标志"
         },
         en: {
-          placeholder:"Search or create spec...",explore:"Sky Search",lucky:"I'm Feeling Lucky",seed:"Publish",edit:"Edit",profile:"My Page",admin:"Console",langLabel:"中",
+          placeholder:"Search or create spec...",explore:"Sky Search",seed:"Publish",edit:"Edit",profile:"My Page",admin:"Console",langLabel:"中",
           brandAlt:"Sky logo",navLabel:"Main navigation",langSwitch:"Switch to Chinese",documentTitle:"Sky — Knowledge evolves in consensus",tagline:"A minimalist consensus wiki · Knowledge evolves in replication",featured:"Explore knowledge",articleCount:"specs",
           emptyTitle:"No specs found",emptyText:"Try another search, or create the first article in the console.",noArticles:"No content yet",official:"Sky Official",by:"By",
           home:"Home",toc:"Contents",infobox:"Infobox",noInfo:"No additional information",editArticle:"Suggest an edit",proposalTitle:"Suggest an edit",
@@ -484,7 +484,7 @@
           return `<article class="wiki-card" data-action="open-article" data-id="${esc(article.id)}" tabindex="0" role="link"><div class="card-topline"><span class="card-tag">${esc(article.id)}</span><span class="card-votes">✓ ${votes}</span></div><h3>${esc(article.title)}</h3><p>${esc(summary)}</p><span class="card-author">${avatarHtml(authorOf(article))}<span>${esc(authorOf(article))}</span></span></article>`;
         }).join("") : `<div class="empty-state"><strong>${t("emptyTitle")}</strong>${t("emptyText")}</div>`;
         const heading = state.query ? t("searchResults") : t("featured");
-        return `<section class="hero"><img id="heroLogo" class="hero-logo" src="${logoSources.light}" alt="${t("brandAlt")}"><p class="hero-subtitle">${t("tagline")}</p></section><section class="search-area"><form class="search-form" id="searchForm"><label class="sr-only" for="searchInput">${t("placeholder")}</label><input id="searchInput" class="search-input" name="query" value="${esc(state.query)}" placeholder="${t("placeholder")}" autocomplete="off"><button class="btn-sky" type="submit">${t("explore")}</button></form><div class="hero-actions"><button class="btn-quiet" type="button" data-action="lucky">${t("lucky")}</button><button class="btn-quiet" type="button" data-action="admin">${t("seed")}</button></div></section><section class="page-shell">${state.backendError ? `<div class="backend-alert">${t("backendUnavailable")}${esc(state.backendError)}</div>` : ""}<div class="section-heading"><h1>${heading}</h1><p>${state.db.length} ${t("articleCount")}</p></div><div class="wiki-grid">${state.loading && !state.db.length ? `<div class="empty-state">${t("loadingArticles")}</div>` : list}</div><footer class="site-footer">Sky · ${t("seededBy")}</footer></section>`;
+        return `<section class="hero"><img id="heroLogo" class="hero-logo" src="${logoSources.light}" alt="${t("brandAlt")}"><p class="hero-subtitle">${t("tagline")}</p></section><section class="search-area"><form class="search-form" id="searchForm"><label class="sr-only" for="searchInput">${t("placeholder")}</label><input id="searchInput" class="search-input" name="query" value="${esc(state.query)}" placeholder="${t("placeholder")}" autocomplete="off"><button class="btn-sky" type="submit">${t("explore")}</button></form><div class="hero-actions"><button class="btn-quiet" type="button" data-action="admin">${t("seed")}</button></div></section><section class="page-shell">${state.backendError ? `<div class="backend-alert">${t("backendUnavailable")}${esc(state.backendError)}</div>` : ""}<div class="section-heading"><h1>${heading}</h1><p>${state.db.length} ${t("articleCount")}</p></div><div class="wiki-grid">${state.loading && !state.db.length ? `<div class="empty-state">${t("loadingArticles")}</div>` : list}</div><footer class="site-footer">Sky · ${t("seededBy")}</footer></section>`;
       }
       function renderArticle() {
         const article = state.db.find(item => item.id === state.articleId);
@@ -772,10 +772,6 @@
         else if (action === "admin") setPage("admin");
         else if (action === "profile") setPage("profile");
         else if (action === "open-article") openArticle(button.dataset.id);
-        else if (action === "lucky") {
-          const first = state.db.find(article => !state.query || `${article.id} ${article.title}`.toLowerCase().includes(state.query.toLowerCase()));
-          if (first) openArticle(first.id); else showToast(t("emptyTitle"));
-        }
         else if (action === "edit") { state.proposalId = state.articleId; state.proposalDraft = ""; render(); document.querySelector(".proposal-input")?.focus(); }
         else if (action === "load-proposal") {
           const proposal = state.proposals.find(item => String(item.id) === button.dataset.proposalId);
